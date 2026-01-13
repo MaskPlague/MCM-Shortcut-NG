@@ -9,7 +9,7 @@
                 commit = "84eac85f8e5f0a00a72f426b486983a62612bb97",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "3.30.5"
+            version = "3.31.6-msvc6"
         },
         ["directxmath#f56260b5"] = {
             repo = {
@@ -42,6 +42,14 @@
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v8.89"
+        },
+        ["simpleini#f56260b5"] = {
+            repo = {
+                branch = "master",
+                commit = "93a5324cf00d478f52ea2f25d43a5853ec85d53f",
+                url = "https://gitlab.com/tboox/xmake-repo.git"
+            },
+            version = "v4.22"
         },
         ["spdlog#09c8c173"] = {
             repo = {

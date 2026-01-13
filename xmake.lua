@@ -5,7 +5,7 @@ set_xmakever("2.8.2")
 includes("lib/commonlibsse-ng")
 
 -- set project
-set_project("commonlibsse-ng-template")
+set_project("MCMHotkeyNG")
 set_version("0.0.0")
 set_license("GPL-3.0")
 
@@ -20,16 +20,19 @@ set_policy("package.requires_lock", true)
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
+-- set config
+set_config("rex_ini", true)
+
 -- targets
-target("commonlibsse-ng-template")
+target("MCMShortcutNG")
     -- add dependencies to target
     add_deps("commonlibsse-ng")
 
     -- add commonlibsse-ng plugin
     add_rules("commonlibsse-ng.plugin", {
-        name = "commonlibsse-ng-template",
-        author = "libxse",
-        description = "SKSE64 plugin template using CommonLibSSE-NG"
+        name = "MCMShortcutNG",
+        author = "MaskPlague",
+        description = "SKSE64 plugin using CommonLibSSE-NG that lets you use a shortcut to open the main MCM window."
     })
 
     -- add src files
