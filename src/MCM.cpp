@@ -110,17 +110,51 @@ namespace MCM
 
     void OpenPage()
     {
-        logger::trace("Opening page");
+        if (pageRetries >= 20)
+        {
+            logger::trace("Page retry timeout"sv);
+            pageRetries = 0;
+            lock = false;
+            return;
+        }
+        RE::GFxValue disabled;
+        auto view = GetJournalView();
+        view->GetVariable(&disabled, (pageList + "disableSelection").c_str());
+        if (disabled.IsBool() && disabled.GetBool())
+        {
+            logger::trace("Selection is disabled for _pageList, recalling with delay"sv);
+            pageRetries++;
+            DelayCall(OpenPage, currentInfo.pageDelay);
+            return;
+        }
+        logger::debug("Opening page"sv);
         GetItemIndexFromEntryList(pageList, ".pageName", currentInfo.pageName);
         lock = false;
     }
 
     void OpenMod()
     {
-        logger::trace("Opening mod");
+        if (modRetries >= 20)
+        {
+            logger::trace("Mod retry timeout"sv);
+            modRetries = 0;
+            lock = false;
+            return;
+        }
+        RE::GFxValue disabled;
+        auto view = GetJournalView();
+        view->GetVariable(&disabled, (modList + "disableSelection").c_str());
+        if (disabled.IsBool() && disabled.GetBool())
+        {
+            logger::trace("Selection is disabled for _modList, recalling with delay"sv);
+            modRetries++;
+            DelayCall(OpenMod, currentInfo.modDelay);
+            return;
+        }
+        logger::debug("Opening mod"sv);
         GetItemIndexFromEntryList(modList, ".modName", currentInfo.modName);
         if (currentInfo.openPage)
-            DelayCall(OpenPage, currentInfo.pageDelay + extraDelay * 2);
+            DelayCall(OpenPage, currentInfo.pageDelay);
         else
             lock = false;
     }
@@ -162,7 +196,8 @@ namespace MCM
         }
         RE::GFxValue args[2] = {2, false};
         view->Invoke("_root.QuestJournalFader.Menu_mc.RestoreSavedSettings", nullptr, args, 2);
-        extraDelay = 0;
+        modRetries = 0;
+        pageRetries = 0;
         bool mcmOpen = IsMCMOpen();
         bool theModOpen = IsModAlreadyOpen();
         bool aModOpen = AModIsOpen();

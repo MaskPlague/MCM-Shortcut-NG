@@ -6,7 +6,8 @@ namespace MCM
     inline bool openPage = false;
     inline bool awaitJournalMenu = false;
     inline bool lock = false;
-    inline int extraDelay = 0;
+    inline int pageRetries = 0;
+    inline int modRetries = 0;
 
     inline std::string root = "_root.ConfigPanelFader.configPanel.contentHolder.modListPanel.";
     inline std::string modList = root + "modListFader.list.";
