@@ -153,7 +153,7 @@ namespace Settings
             if (!info.hotkey)
             {
                 invalid = true;
-                message = "Hotkey may not be 0, only modifier keys can.";
+                message = "- MCM Shortcut NG -\nHotkey may not be 0, only modifier keys can.";
                 break;
             }
 
@@ -163,7 +163,7 @@ namespace Settings
             {
                 invalid = true;
                 message =
-                    "Two shortcuts resolve to the same key combination. "
+                    "- MCM Shortcut NG -\nTwo shortcuts resolve to the same key combination. "
                     "This would cause ambiguous activation.";
                 break;
             }
@@ -172,7 +172,8 @@ namespace Settings
         {
             invalid = true;
             message =
-                "You have no shortcuts defined in your MCMShortcut.json or the json failed to load likely due to improper formatting.";
+                "- MCM Shortcut NG -\nYou have no shortcuts defined in your MCMShortcut.json "
+                "or the json failed to load likely due to improper formatting.";
         }
         if (invalid)
         {
@@ -196,5 +197,6 @@ namespace Settings
         SetLogLevel();
         settingStore->Save();
         MCMManager::lock = false;
+        checkPrintKey = printNamesKey.GetValue();
     }
 }
