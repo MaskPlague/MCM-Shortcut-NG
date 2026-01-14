@@ -54,7 +54,7 @@ namespace MCMManager
         }
         if (index == -1)
             return;
-        RE::GFxValue args[2] = {index, 1};
+        RE::GFxValue args[2] = {index, 0}; // 0 is keyboard input for compatibility with controller
         view->Invoke((page + "doSetSelectedIndex").c_str(), nullptr, args, 2);
         view->Invoke((page + "onItemPress").c_str(), nullptr, args, 2);
     }
