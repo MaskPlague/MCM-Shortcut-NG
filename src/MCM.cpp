@@ -43,7 +43,7 @@ namespace MCM
             if (!name.IsString())
                 continue;
             logger::debug(">  {}: {},   index: {}"sv, varToGet, name.GetString(), i);
-            if (item == name.GetString())
+            if (item == name.GetString() || (std::strcmp(varToGet, ".modName") == 0 && currentInfo.modNameTranslated == name.GetString()))
             {
                 index = i;
                 break;
