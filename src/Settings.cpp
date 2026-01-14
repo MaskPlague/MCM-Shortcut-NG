@@ -149,7 +149,7 @@ namespace Settings
             if (!info.hotkey)
             {
                 invalid = true;
-                message = "Hotkey may not be 0.";
+                message = "Hotkey may not be 0, only modifier keys can.";
                 break;
             }
 
