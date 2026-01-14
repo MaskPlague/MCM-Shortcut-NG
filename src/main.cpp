@@ -18,6 +18,7 @@ namespace MCMShortcutNG
             logger::info("Adding Event Sinks"sv);
             RE::BSInputDeviceManager::GetSingleton()->AddEventSink(Events::InputEvent::GetSingleton());
             RE::UI::GetSingleton()->AddEventSink(Events::UIEvent::GetSingleton());
+
             Settings::LoadJSON();
         }
         else if (msg->type == SKSE::MessagingInterface::kPostLoadGame && bool(msg->data))
