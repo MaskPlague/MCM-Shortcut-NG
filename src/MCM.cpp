@@ -1,6 +1,6 @@
-namespace MCM
+namespace MCMManager
 {
-
+    // Returns the journal view
     RE::GFxMovieView *GetJournalView()
     {
         auto ui = RE::UI::GetSingleton();
@@ -8,12 +8,14 @@ namespace MCM
         return journalMenu ? journalMenu->uiMovie.get() : nullptr;
     }
 
+    // Adds a UI Task to the SKSE task interface
     void AddUiTask(void (*func)())
     {
         SKSE::GetTaskInterface()->AddUITask([func]()
                                             { func(); });
     }
 
+    // Delays a function call by delay (milliseconds)
     void DelayCall(void (*func)(), int delay)
     {
         std::thread([func, delay]()
@@ -21,6 +23,7 @@ namespace MCM
             .detach();
     }
 
+    // Gets the index of the item in the entry list of the page and selects and clicks it
     void GetItemIndexFromEntryList(std::string page, const char *varToGet, std::string item)
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -56,6 +59,7 @@ namespace MCM
         view->Invoke((page + "onItemPress").c_str(), nullptr, args, 2);
     }
 
+    // Is any mod open in the MCM
     bool AModIsOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -69,6 +73,7 @@ namespace MCM
         return state.GetNumber() == 2;
     }
 
+    // Is the currentInfo mod open in the MCM
     bool IsModAlreadyOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -82,6 +87,7 @@ namespace MCM
         return currentInfo.modNameTranslated == textVal.GetString() && AModIsOpen();
     }
 
+    // Is any mod's page open in the MCM
     bool APageIsOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -95,6 +101,7 @@ namespace MCM
         return true;
     }
 
+    // Is the currentInfo page open in the MCM
     bool IsPageAlreadyOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -108,6 +115,7 @@ namespace MCM
         return currentInfo.pageName == pageName.GetString();
     }
 
+    // Opens the currentInfo page, will retry itself 20 times if selection is disabled for pageList
     void OpenPage()
     {
         if (pageRetries >= 20)
@@ -132,6 +140,7 @@ namespace MCM
         lock = false;
     }
 
+    // Opens the currentInfo mod, will retry itself 20 times if selection is disabled for modList
     void OpenMod()
     {
         if (modRetries >= 20)
@@ -159,6 +168,7 @@ namespace MCM
             lock = false;
     }
 
+    // Is the MCM currently open, checks via comparing the Quest Journal and Config Panel depths
     bool IsMCMOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -186,6 +196,7 @@ namespace MCM
             return true;
     }
 
+    // Open MCM/Mod/Page or close the MCM if the MCM or mod or page that was to open is already open, if allowed.
     void OpenFromJournal()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -215,7 +226,7 @@ namespace MCM
              (theModOpen && !currentInfo.openMod) ||
              (!aModOpen && !currentInfo.openMod)))
         {
-            logger::trace("Mod/Page already open, closing"sv);
+            logger::debug("Mod/Page already open, closing"sv);
             auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
             uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
             if (Settings::ReturnToPreviousMenu.GetValue() && closedMenuName != "None")
@@ -230,27 +241,27 @@ namespace MCM
 
         if (!mcmOpen)
         {
-            logger::trace("MCM not open, opening"sv);
+            logger::debug("MCM not open, opening"sv);
             view->Invoke("_root.QuestJournalFader.Menu_mc.ConfigPanelOpen", nullptr, nullptr, 0);
         }
 
         if (!theModOpen && aModOpen)
         {
-            logger::trace("The mod is not open but a mod is open, reverting to main MCM"sv);
+            logger::debug("The mod is not open but a mod is open, reverting to main MCM"sv);
             RE::GFxValue arg[1] = {4};
             view->Invoke((root + "setState").c_str(), nullptr, arg, 1);
         }
 
         if (!theModOpen && currentInfo.openMod)
         {
-            logger::trace("The mod is not open..."sv);
+            logger::debug("The mod is not open..."sv);
             DelayCall(OpenMod, currentInfo.modDelay);
             unlock = false;
         }
 
         if (theModOpen && !pageOpen && currentInfo.openPage)
         {
-            logger::trace("The mod is open but the page is not..."sv);
+            logger::debug("The mod is open but the page is not..."sv);
             DelayCall(OpenPage, 0);
             unlock = false;
         }
@@ -259,10 +270,14 @@ namespace MCM
             lock = false;
     }
 
+    // Close the currently opened menu if allowed, open the journal if need be, and then call OpenFromJournal
     void CloseOpenMenus()
     {
         auto ui = RE::UI::GetSingleton();
+        if (!ui)
+            return;
         std::string_view menuName = "None";
+
         if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME))
             if (Settings::DisableInInventoryOverride.GetValue() || currentInfo.disableInInventory)
                 return;
