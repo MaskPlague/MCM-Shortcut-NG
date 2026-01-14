@@ -264,22 +264,25 @@ namespace MCM
         auto ui = RE::UI::GetSingleton();
         std::string_view menuName = "None";
         if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME))
-            if (!Settings::CloseInventory.GetValue())
+            if (Settings::DisableInInventoryOverride.GetValue() || currentInfo.disableInInventory)
                 return;
             else
                 menuName = RE::InventoryMenu::MENU_NAME;
+
         if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
-            if (!Settings::CloseInventory.GetValue())
+            if (Settings::DisableInMapOverride.GetValue() || currentInfo.disableInMap)
                 return;
             else
                 menuName = RE::MapMenu::MENU_NAME;
+
         if (ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
-            if (!Settings::CloseInventory.GetValue())
+            if (Settings::DisableInDialogueOverride.GetValue() || currentInfo.disableInDialogue)
                 return;
             else
                 menuName = RE::DialogueMenu::MENU_NAME;
+
         if (ui->IsMenuOpen(RE::MagicMenu::MENU_NAME))
-            if (!Settings::CloseInventory.GetValue())
+            if (Settings::DisableInMagicOverride.GetValue() || currentInfo.disableInMagic)
                 return;
             else
                 menuName = RE::MagicMenu::MENU_NAME;
