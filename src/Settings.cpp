@@ -123,21 +123,44 @@ namespace Settings
         logger::info("Successfully loaded shortcuts from JSON");
     }
 
-    std::set<int> KeySet(const shortcutInfo &info)
+    struct ShortcutKeySet
     {
+        bool controller;
         std::set<int> keys;
-        if (info.modifier1)
-            keys.insert(info.modifier1);
-        if (info.modifier2)
-            keys.insert(info.modifier2);
-        keys.insert(info.hotkey);
-        return keys;
+
+        bool operator==(const ShortcutKeySet &other) const
+        {
+            return controller == other.controller && keys == other.keys;
+        }
+
+        bool operator<(const ShortcutKeySet &other) const
+        {
+            if (controller != other.controller)
+                return controller < other.controller;
+            return keys < other.keys;
+        }
+    };
+
+    ShortcutKeySet MakeKeySet(const shortcutInfo &info)
+    {
+        ShortcutKeySet out;
+        out.controller = info.controller;
+
+        if (info.modifier1 != 0)
+            out.keys.insert(info.modifier1);
+
+        if (info.modifier2 != 0)
+            out.keys.insert(info.modifier2);
+
+        out.keys.insert(info.hotkey);
+
+        return out;
     }
 
     bool ValidateShortcuts()
     {
         logger::info("Validating shortcuts\n");
-        std::set<std::set<int>> seen;
+        std::set<ShortcutKeySet> seen;
         bool invalid = false;
         std::string message;
         for (shortcutInfo info : shortcutInfos)
@@ -157,14 +180,14 @@ namespace Settings
                 break;
             }
 
-            auto keys = KeySet(info);
+            auto keys = MakeKeySet(info);
 
             if (!seen.insert(keys).second)
             {
                 invalid = true;
                 message =
-                    "- MCM Shortcut NG -\nTwo shortcuts resolve to the same key combination. "
-                    "This would cause ambiguous activation.";
+                    "- MCM Shortcut NG -\nTwo shortcuts on the same input device resolve to the same "
+                    "key combination. This would cause ambiguous activation.";
                 break;
             }
         }
