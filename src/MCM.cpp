@@ -23,8 +23,9 @@ namespace MCMManager
             .detach();
     }
 
+    // Old method
     // Gets the index of the item in the entry list of the page and selects and clicks it
-    void GetItemIndexFromEntryList(std::string page, const char *varToGet, std::string item)
+    /*void GetItemIndexFromEntryList(std::string page, const char *varToGet, std::string item)
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
@@ -45,8 +46,9 @@ namespace MCMManager
             view->GetVariable(&name, (entryList + std::to_string(i) + varToGet).c_str());
             if (!name.IsString())
                 continue;
-            logger::debug(">  {}: {},   index: {}"sv, varToGet, name.GetString(), i);
-            if (item == name.GetString() || (std::strcmp(varToGet, ".modName") == 0 && currentInfo.modNameTranslated == name.GetString()))
+            const char *nameStr = name.GetString();
+            logger::debug(">  {}: {},   index: {}"sv, varToGet, nameStr, i);
+            if (item == nameStr || (std::strcmp(varToGet, ".modName") == 0 && currentInfo.modNameTranslated == nameStr))
             {
                 index = i;
                 break;
@@ -57,10 +59,56 @@ namespace MCMManager
         RE::GFxValue args[2] = {index, 0}; // 0 is keyboard input for compatibility with controller
         view->Invoke((page + "doSetSelectedIndex").c_str(), nullptr, args, 2);
         view->Invoke((page + "onItemPress").c_str(), nullptr, args, 2);
+    }*/
+
+    // Gets the index of the item in the entry list of the page and selects and clicks it
+    void GetItemIndexFromEntryList(std::string pagePath, const char *varToGet, std::string item)
+    {
+        RE::GFxMovieView *view = GetJournalView();
+        if (!view)
+            return;
+        RE::GFxValue pageObj;
+        view->GetVariable(&pageObj, pagePath.c_str());
+        if (!pageObj.IsObject())
+            return;
+        RE::GFxValue entryList;
+        pageObj.GetMember("_entryList", &entryList);
+        if (!entryList.IsArray())
+            return;
+        uint32_t length = entryList.GetArraySize();
+        if (length == 0)
+        {
+            logger::debug("No entries to check for {}s, consider increasing delay"sv, varToGet, length);
+            return;
+        }
+        logger::debug("Number of entries to check for {}s: {}"sv, varToGet, length);
+        int index = -1;
+        for (uint32_t i = 0; i < length; i++)
+        {
+            RE::GFxValue entryObject;
+            entryList.GetElement(i, &entryObject);
+            RE::GFxValue nameVal;
+            entryObject.GetMember(varToGet, &nameVal);
+            if (!nameVal.IsString())
+                continue;
+            const char *nameStr = nameVal.GetString();
+            if (item == nameStr || (std::strcmp(varToGet, "modName") == 0 && currentInfo.modNameTranslated == nameStr))
+            {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1)
+            return;
+        RE::GFxValue args[2];
+        args[0].SetNumber(index);
+        args[1].SetNumber(0);
+        pageObj.Invoke("doSetSelectedIndex", nullptr, args, 2);
+        pageObj.Invoke("onItemPress", nullptr, args, 2);
     }
 
     // Is any mod open in the MCM
-    bool AModIsOpen()
+    bool IsAnyModOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
@@ -84,21 +132,28 @@ namespace MCMManager
         view->GetVariable(&textVal, titleText.c_str());
         if (!textVal.IsString())
             return false;
-        return currentInfo.modNameTranslated == textVal.GetString() && AModIsOpen();
+        return currentInfo.modNameTranslated == textVal.GetString() && IsAnyModOpen();
     }
 
     // Is any mod's page open in the MCM
-    bool APageIsOpen()
+    bool IsAnyPageOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
             return false;
-        RE::GFxValue pageName;
+        RE::GFxValue visible;
+        std::string savedIndex = configPanel + "contentHolder.optionsPanel.optionsList._visible";
+        view->GetVariable(&visible, savedIndex.c_str());
+        if (!visible.IsBool())
+            return false;
+        return visible.GetBool();
+        // Left just in case, not really accurate as the activeEntry is kept until a new MCM mod is loaded
+        /*RE::GFxValue pageName;
         std::string activePageName = pageList + "listState.activeEntry.pageName";
         view->GetVariable(&pageName, activePageName.c_str());
         if (!pageName.IsString())
             return false;
-        return true;
+        return true;*/
     }
 
     // Is the currentInfo page open in the MCM
@@ -170,7 +225,7 @@ namespace MCMManager
             return;
         }
         logger::debug("Opening page"sv);
-        GetItemIndexFromEntryList(pageList, ".pageName", currentInfo.pageName);
+        GetItemIndexFromEntryList(pageList, "pageName", currentInfo.pageName);
         lock = false;
     }
 
@@ -197,39 +252,45 @@ namespace MCMManager
             return;
         }
         logger::debug("Opening mod"sv);
-        GetItemIndexFromEntryList(modList, ".modName", currentInfo.modName);
+        GetItemIndexFromEntryList(modList, "modName", currentInfo.modName);
         if (currentInfo.openPage)
             DelayCall(OpenPage, currentInfo.pageDelay);
         else
             lock = false;
     }
 
-    // Is the MCM currently open, checks via comparing the Quest Journal and Config Panel depths
+    // Is the MCM currently open, checks the config panel's alpha
     bool IsMCMOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
             return false;
-
-        RE::GFxValue gfxQJFdepth;
-        double qjfDepth = -1.0;
-        RE::GFxValue gfxCPFdepth;
-        double cpfDepth = -1.0;
-
-        if (Settings::CanAlsoCloseMCM.GetValue())
-        {
-            view->Invoke("_root.QuestJournalFader.getDepth", &gfxQJFdepth, nullptr, 0);
-            if (gfxQJFdepth.IsNumber())
-                qjfDepth = gfxQJFdepth.GetNumber();
-            view->Invoke("_root.ConfigPanelFader.getDepth", &gfxCPFdepth, nullptr, 0);
-            if (gfxCPFdepth.IsNumber())
-                cpfDepth = gfxCPFdepth.GetNumber();
-        }
-
-        if (cpfDepth < qjfDepth || !Settings::CanAlsoCloseMCM.GetValue())
+        RE::GFxValue alpha;
+        view->GetVariable(&alpha, (configPanel + "_alpha").c_str());
+        if (!alpha.IsNumber())
             return false;
-        else
-            return true;
+        return alpha.GetNumber() == 100;
+        // Leaving this here just in case alpha ends up being unreliable.
+        // Is the MCM currently open, checks via comparing the Quest Journal and Config Panel depths
+        /*RE::GFxValue gfxQJFdepth;
+         double qjfDepth = -1.0;
+         RE::GFxValue gfxCPFdepth;
+         double cpfDepth = -1.0;
+
+         if (Settings::CanAlsoCloseMCM.GetValue())
+         {
+             view->Invoke("_root.QuestJournalFader.getDepth", &gfxQJFdepth, nullptr, 0);
+             if (gfxQJFdepth.IsNumber())
+                 qjfDepth = gfxQJFdepth.GetNumber();
+             view->Invoke("_root.ConfigPanelFader.getDepth", &gfxCPFdepth, nullptr, 0);
+             if (gfxCPFdepth.IsNumber())
+                 cpfDepth = gfxCPFdepth.GetNumber();
+         }
+
+         if (cpfDepth < qjfDepth || !Settings::CanAlsoCloseMCM.GetValue())
+             return false;
+         else
+             return true;*/
     }
 
     // Open MCM/Mod/Page or close the MCM if the MCM or mod or page that was to open is already open, if allowed.
@@ -247,9 +308,9 @@ namespace MCMManager
         pageRetries = 0;
         bool mcmOpen = IsMCMOpen();
         bool theModOpen = IsModAlreadyOpen();
-        bool aModOpen = AModIsOpen();
+        bool aModOpen = IsAnyModOpen();
         bool pageOpen = IsPageAlreadyOpen();
-        bool aPageOpen = APageIsOpen();
+        bool aPageOpen = IsAnyPageOpen();
         bool unlock = true;
         /*logger::trace("MCM is Open:      {}"sv, mcmOpen);
         logger::trace("The Mod is open:  {},    to be open:    {}"sv, theModOpen, currentInfo.openMod);
