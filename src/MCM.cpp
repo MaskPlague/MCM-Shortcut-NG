@@ -218,6 +218,12 @@ namespace MCM
             logger::trace("Mod/Page already open, closing"sv);
             auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
             uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+            if (Settings::ReturnToPreviousMenu.GetValue() && closedMenuName != "None")
+            {
+                logger::debug("Reopening closed menu: {}", closedMenuName);
+                uiMessageQueue->AddMessage(closedMenuName, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+            }
+            closedMenuName = "None";
             lock = false;
             return;
         }
@@ -289,7 +295,10 @@ namespace MCM
         {
             auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
             if (menuName != "None")
+            {
                 uiMessageQueue->AddMessage(menuName, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+                closedMenuName = menuName != RE::DialogueMenu::MENU_NAME ? menuName : "None";
+            }
             awaitJournalMenu = true;
             uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
         }
