@@ -172,5 +172,6 @@ namespace Settings
         settingStore->Load();
         SetLogLevel();
         settingStore->Save();
+        MCM::lock = false;
     }
 }
