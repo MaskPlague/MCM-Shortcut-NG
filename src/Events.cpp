@@ -56,7 +56,7 @@ namespace Events
                 {
                     if (MCM::lock)
                     {
-                        logger::trace("MCM Locked");
+                        logger::trace("MCM Locked"sv);
                         return;
                     }
                     logger::trace("Shortcut hit"sv);
@@ -98,7 +98,6 @@ namespace Events
             if (noKeysDown)
                 settingsReloaded = false;
         }
-        // logger::info("Locked?: {}", MCM::lock);
     }
 
     RE::BSEventNotifyControl InputEvent::ProcessEvent(

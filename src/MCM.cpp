@@ -32,9 +32,9 @@ namespace MCM
         if (!length.IsNumber())
             return;
         if (length.GetNumber() == 0)
-            logger::debug("No entries to check for {}s, consider increasing delay", varToGet, length.GetNumber());
+            logger::debug("No entries to check for {}s, consider increasing delay"sv, varToGet, length.GetNumber());
         else
-            logger::debug("Number of entires to check for {}s: {}", varToGet, length.GetNumber());
+            logger::debug("Number of entries to check for {}s: {}"sv, varToGet, length.GetNumber());
         int index = -1;
         for (int i = 0; i < length.GetNumber(); i++)
         {
@@ -42,7 +42,7 @@ namespace MCM
             view->GetVariable(&name, (entryList + std::to_string(i) + varToGet).c_str());
             if (!name.IsString())
                 continue;
-            logger::debug(">  {}: {},   index: {}", varToGet, name.GetString(), i);
+            logger::debug(">  {}: {},   index: {}"sv, varToGet, name.GetString(), i);
             if (item == name.GetString())
             {
                 index = i;
