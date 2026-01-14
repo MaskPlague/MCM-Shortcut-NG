@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MCM
+namespace MCMManager
 {
     inline bool openMod = false;
     inline bool openPage = false;
@@ -8,13 +8,14 @@ namespace MCM
     inline bool lock = false;
     inline int pageRetries = 0;
     inline int modRetries = 0;
+    inline std::string_view closedMenuName = "None";
 
     inline std::string root = "_root.ConfigPanelFader.configPanel.contentHolder.modListPanel.";
     inline std::string modList = root + "modListFader.list.";
     inline std::string pageList = root + "subListFader.list.";
     inline std::string showModList = root + "showList";
 
-    inline Settings::shorcutInfo currentInfo;
+    inline Settings::shortcutInfo currentInfo;
 
     void OpenFromJournal();
 
