@@ -107,7 +107,7 @@ namespace Events
                 Settings::LoadINI();
                 Settings::LoadJSON();
                 if (Settings::ValidateShortcuts())
-                    RE::DebugMessageBox("MCM Hotkey NG Settings Reloaded");
+                    RE::DebugMessageBox("- MCM Shortcut NG -\nSettings Reloaded");
             }
         }
         else if (!shortcut.hotkeyDown && !shortcut.modifier1Down && !shortcut.modifier2Down && !shortcut.otherKeyDown)
