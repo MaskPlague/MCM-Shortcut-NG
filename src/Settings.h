@@ -28,6 +28,8 @@ namespace Settings
 
         bool orderMatters = false;
 
+        bool controller = false;
+
         bool canReloadSettings = true;
 
         bool disableInInventory = false;

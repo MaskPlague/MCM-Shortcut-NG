@@ -91,6 +91,9 @@ namespace Settings
             if (hotkeyConfig.contains("Can Reload Settings"))
                 newInfo.canReloadSettings = hotkeyConfig["Can Reload Settings"].get<bool>();
 
+            if (hotkeyConfig.contains("Controller"))
+                newInfo.controller = hotkeyConfig["Controller"].get<bool>();
+
             if (hotkeyConfig.contains("Mod Name"))
             {
                 newInfo.modName = hotkeyConfig["Mod Name"].get<std::string>();
@@ -133,18 +136,19 @@ namespace Settings
 
     bool ValidateShortcuts()
     {
-        logger::info("Validating shortcuts");
+        logger::info("Validating shortcuts\n");
         std::set<std::set<int>> seen;
         bool invalid = false;
         std::string message;
         for (shortcutInfo info : shortcutInfos)
         {
-            logger::info("Shortcut Info:        Can Reload Settings: {}", info.canReloadSettings);
+            logger::info("Shortcut Info:        Can Reload Settings: {},    Controller: {}", info.canReloadSettings, info.controller);
             logger::info(">  Keys:  Mod1: {},   Mod2: {},   Key: {},    Order Matters: {},", info.modifier1, info.modifier2, info.hotkey, info.orderMatters);
             logger::info(">  Mod:   Open: {},   Name: {},   Delay: {}", info.openMod, info.modName, info.modDelay);
             logger::info(">  Page:  Open: {},   Name: {},   Delay: {}", info.openPage, info.pageName, info.pageDelay);
             logger::info(">  Disabled:   Inv: {},    Dia: {},    Mag: {},    Map: {}",
                          info.disableInInventory, info.disableInDialogue, info.disableInMagic, info.disableInMap);
+            logger::info("> -- --  -  -- --  -  -- --  -  -- --  -  -- --  -  -- --  -  -- --  -  -- -- <\n");
 
             if (!info.hotkey)
             {
@@ -168,7 +172,7 @@ namespace Settings
         {
             invalid = true;
             message =
-                "You have no shortcuts defined in your MCMShortcut.json.";
+                "You have no shortcuts defined in your MCMShortcut.json or the json failed to load likely due to improper formatting.";
         }
         if (invalid)
         {

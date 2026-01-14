@@ -146,8 +146,12 @@ namespace Events
     {
         if (btn->IsDown())
             logger::trace("KeyCode: {}"sv, btn->GetIDCode());
+        auto device = btn->GetDevice();
         for (Settings::shortcutInfo &shortcut : Settings::shortcutInfos)
         {
+            if (device == RE::INPUT_DEVICE::kGamepad && !shortcut.controller || shortcut.controller && device != RE::INPUT_DEVICE::kGamepad)
+                continue;
+
             EvaluateKeyForShortcut(btn->GetIDCode(), btn->IsHeld(), btn->IsDown(), shortcut);
 
             // If false then MCM is locked by previous hotkey
@@ -185,10 +189,6 @@ namespace Events
             {
                 if (auto btn = e->AsButtonEvent(); btn)
                 {
-                    auto device = e->GetDevice();
-                    if (device == RE::INPUT_DEVICE::kGamepad)
-                        return RE::BSEventNotifyControl::kContinue;
-
                     CheckShortcuts(btn);
                 }
             }
