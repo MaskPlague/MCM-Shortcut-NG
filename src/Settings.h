@@ -4,25 +4,41 @@ namespace Settings
 {
     inline REX::INI::I32 SettingsThreshold{"General", "Settings Reload Threshold Milliseconds", 3000};
     inline REX::INI::Bool CanAlsoCloseMCM{"General", "Can Also Close Opened MCM", true};
+    inline REX::INI::Bool ReturnToPreviousMenu{"General", "Returns to Previously Closed Menu", true};
 
-    inline REX::INI::Bool CloseDialogue{"Menus", "ActiveInDialogue", true};
-    inline REX::INI::Bool CloseInventory{"Menus", "ActiveInInventory", true};
-    inline REX::INI::Bool CloseMagic{"Menus", "ActiveInMagic", true};
-    inline REX::INI::Bool CloseMap{"Menus", "ActiveInMap", true};
+    inline REX::INI::Bool DisableInDialogueOverride{"Menus", "Disable In Dialogue Override", false};
+    inline REX::INI::Bool DisableInInventoryOverride{"Menus", "Disable In Inventory Override", false};
+    inline REX::INI::Bool DisableInMagicOverride{"Menus", "Disable In Magic Override", false};
+    inline REX::INI::Bool DisableInMapOverride{"Menus", "Disable In Map Override", false};
 
     inline REX::INI::I32 log_level{"Debug", "Log Level", 2};
 
     inline bool gameHasLoaded = false;
 
-    struct shorcutInfo
+    struct shortcutInfo
     {
         int modifier1 = 0;
         int modifier2 = 0;
         int hotkey = 0;
 
+        int orderIndex = 0;
+        int modifier1Order = -1;
+        int modifier2Order = -1;
+        int hotkeyOrder = -1;
+
+        bool orderMatters = false;
+
+        bool canReloadSettings = true;
+
+        bool disableInInventory = false;
+        bool disableInDialogue = false;
+        bool disableInMagic = false;
+        bool disableInMap = false;
+
         bool shortcutHit = false;
         bool stillHeld = false;
         bool otherKeyDown = false;
+        bool otherKeyHit = false;
 
         bool modifier1Down = false;
         bool modifier2Down = false;
@@ -39,7 +55,7 @@ namespace Settings
         int pageDelay = 500;
     };
 
-    inline std::vector<shorcutInfo> shortcutInfos;
+    inline std::vector<shortcutInfo> shortcutInfos;
 
     bool ValidateShortcuts();
 

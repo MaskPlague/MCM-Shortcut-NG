@@ -41,6 +41,7 @@ namespace Settings
 
     void LoadJSON()
     {
+        logger::info("Loading shortcuts from MCMShortcutNG.json");
         std::ifstream inputFile("Data\\SKSE\\Plugins\\MCMShortcutNG.json");
         if (!inputFile.is_open())
         {
@@ -63,7 +64,7 @@ namespace Settings
         shortcutInfos.clear();
         for (auto hotkeyConfig : jsonData)
         {
-            shorcutInfo newInfo;
+            shortcutInfo newInfo;
 
             if (hotkeyConfig.contains("Modifier 1"))
                 newInfo.modifier1 = hotkeyConfig["Modifier 1"].get<int>();
@@ -71,6 +72,24 @@ namespace Settings
                 newInfo.modifier2 = hotkeyConfig["Modifier 2"].get<int>();
             if (hotkeyConfig.contains("Hotkey"))
                 newInfo.hotkey = hotkeyConfig["Hotkey"].get<int>();
+
+            if (hotkeyConfig.contains("Key Order Matters"))
+                newInfo.orderMatters = hotkeyConfig["Key Order Matters"].get<bool>();
+
+            if (hotkeyConfig.contains("Disable In Inventory"))
+                newInfo.disableInInventory = hotkeyConfig["Disable In Inventory"].get<bool>();
+
+            if (hotkeyConfig.contains("Disable In Dialogue"))
+                newInfo.disableInDialogue = hotkeyConfig["Disable In Dialogue"].get<bool>();
+
+            if (hotkeyConfig.contains("Disable In Magic"))
+                newInfo.disableInMagic = hotkeyConfig["Disable In Magic"].get<bool>();
+
+            if (hotkeyConfig.contains("Disable In Map"))
+                newInfo.disableInMap = hotkeyConfig["Disable In Map"].get<bool>();
+
+            if (hotkeyConfig.contains("Can Reload Settings"))
+                newInfo.canReloadSettings = hotkeyConfig["Can Reload Settings"].get<bool>();
 
             if (hotkeyConfig.contains("Mod Name"))
             {
@@ -91,13 +110,6 @@ namespace Settings
             {
                 newInfo.pageName = hotkeyConfig["Page Name"].get<std::string>();
                 newInfo.openPage = std::strcmp(newInfo.pageName.c_str(), "None") != 0;
-                /*if (newInfo.openPage)
-                {
-                    //if (newInfo.pageName.starts_with("$"))
-                        SKSE::Translation::Translate(newInfo.pageName, newInfo.pageNameTranslated);
-                    else
-                        newInfo.pageNameTranslated = newInfo.pageName;
-                }*/
             }
             if (hotkeyConfig.contains("Page Open Delay"))
                 newInfo.pageDelay = hotkeyConfig["Page Open Delay"].get<int>();
@@ -105,46 +117,50 @@ namespace Settings
             if (newInfo.hotkey != 0)
                 shortcutInfos.push_back(newInfo);
         }
+        logger::info("Successfully loaded shortcuts from JSON");
+    }
+
+    std::set<int> KeySet(const shortcutInfo &info)
+    {
+        std::set<int> keys;
+        if (info.modifier1)
+            keys.insert(info.modifier1);
+        if (info.modifier2)
+            keys.insert(info.modifier2);
+        keys.insert(info.hotkey);
+        return keys;
     }
 
     bool ValidateShortcuts()
     {
-        std::vector<std::array<int, 3>> keyCombos;
+        logger::info("Validating shortcuts");
+        std::set<std::set<int>> seen;
         bool invalid = false;
         std::string message;
-        for (shorcutInfo info : shortcutInfos)
+        for (shortcutInfo info : shortcutInfos)
         {
-            logger::info("Shortcut Info:");
-            logger::info(">  Keys:  Mod1: {},   Mod2: {},   Key: {},", info.modifier1, info.modifier2, info.hotkey);
+            logger::info("Shortcut Info:        Can Reload Settings: {}", info.canReloadSettings);
+            logger::info(">  Keys:  Mod1: {},   Mod2: {},   Key: {},    Order Matters: {},", info.modifier1, info.modifier2, info.hotkey, info.orderMatters);
             logger::info(">  Mod:   Open: {},   Name: {},   Delay: {}", info.openMod, info.modName, info.modDelay);
             logger::info(">  Page:  Open: {},   Name: {},   Delay: {}", info.openPage, info.pageName, info.pageDelay);
+            logger::info(">  Disabled:   Inv: {},    Dia: {},    Mag: {},    Map: {}",
+                         info.disableInInventory, info.disableInDialogue, info.disableInMagic, info.disableInMap);
 
-            std::array<int, 3> combo = {info.modifier1, info.modifier2, info.hotkey};
-            std::sort(combo.begin(), combo.end());
-            auto iter = std::find(keyCombos.begin(), keyCombos.end(), combo);
-
-            if (info.hotkey == 0)
+            if (!info.hotkey)
             {
                 invalid = true;
-                message =
-                    "You have an invalid shortcut defined in your MCMShortcut.json. No hotkey value may be 0, only modifiers. "
-                    "A default shortcut has been set in game as Shift+Ctrl+V. Please fix the invalid shortcut in the json and "
-                    "then reload the shortcuts by holding Shift+Ctrl+V past your setting threshold defined in the MCMShortcutNG.ini "
-                    "(default 3 seconds).";
+                message = "Hotkey may not be 0.";
                 break;
             }
 
-            if (iter == keyCombos.end())
-                keyCombos.push_back(combo);
-            else
+            auto keys = KeySet(info);
+
+            if (!seen.insert(keys).second)
             {
                 invalid = true;
                 message =
-                    "You have at least two shortcuts with the same keys (order doesn't matter) which can cause "
-                    "unintended behavior. All shortcuts have been cleared and one has been created as "
-                    "Shift+Ctrl+V in game. Please fix the shortcut confict in your MCMShortcut.json and then "
-                    "reload the shortcuts by holding Shift+Ctrl+V past your setting threshold defined "
-                    "in the MCMShortcutNG.ini (default 3 seconds).";
+                    "Two shortcuts resolve to the same key combination. "
+                    "This would cause ambiguous activation.";
                 break;
             }
         }
@@ -152,18 +168,21 @@ namespace Settings
         {
             invalid = true;
             message =
-                "You have no shortcuts defined in your MCMShortcut.json. A default shortcut has been set in game "
-                "as Shift+Ctrl+V. Please define your own shortcut in the json and then reload the shortcuts by "
-                "holding Shift+Ctrl+V past your setting threshold defined in the MCMShortcutNG.ini (default 3 seconds).";
+                "You have no shortcuts defined in your MCMShortcut.json.";
         }
         if (invalid)
         {
             shortcutInfos.clear();
-            shorcutInfo info{42, 29, 47};
+            shortcutInfo info{42, 29, 47};
             shortcutInfos.push_back(info);
+            message = message + " A default shortcut has been set in game as Shift+Ctrl+V. Please fix this issue and "
+                                "then reload the shortcuts by holding Shift+Ctrl+V past your setting threshold defined in the MCMShortcutNG.ini "
+                                "(default 3 seconds).";
             RE::DebugMessageBox(message.c_str());
+            logger::warn("Shortcuts failed validation!");
             return false;
         }
+        logger::info("Shortcuts are valid");
         return true;
     }
 
@@ -172,6 +191,6 @@ namespace Settings
         settingStore->Load();
         SetLogLevel();
         settingStore->Save();
-        MCM::lock = false;
+        MCMManager::lock = false;
     }
 }
