@@ -18,6 +18,8 @@ namespace MCMManager
 
     inline Settings::shortcutInfo currentInfo;
 
+    void PrintNames();
+
     void OpenFromJournal();
 
     void CloseOpenMenus();

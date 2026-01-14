@@ -115,6 +115,38 @@ namespace MCMManager
         return currentInfo.pageName == pageName.GetString();
     }
 
+    void PrintNames()
+    {
+        if (!IsMCMOpen())
+            return;
+        if (!IsAnyModOpen())
+        {
+            RE::DebugMessageBox("- MCM Shortcut NG -\nNo mod currently open. Set the Mod name to \"None\" in order to open this page.");
+            return;
+        }
+        RE::GFxMovieView *view = GetJournalView();
+        if (!view)
+            return;
+        std::string modNameStr = "Could Not Be Found";
+        std::string pageNameStr = "Could Not Be Found";
+        std::string message = "- MCM Shortcut NG -\nMod Name: ";
+        RE::GFxValue modName;
+        view->GetVariable(&modName, (modListPanel + "_titleText").c_str());
+        if (modName.IsString())
+            modNameStr = modName.GetString();
+        message = message + modNameStr;
+        if (IsAnyPageOpen())
+        {
+            RE::GFxValue pageName;
+            view->GetVariable(&pageName, (pageList + "listState.activeEntry.pageName").c_str());
+            if (pageName.IsString())
+                pageNameStr = pageName.GetString();
+            message = message + "\nPage Name: " + pageNameStr;
+        }
+
+        RE::DebugMessageBox(message.c_str());
+    }
+
     // Opens the currentInfo page, will retry itself 20 times if selection is disabled for pageList
     void OpenPage()
     {

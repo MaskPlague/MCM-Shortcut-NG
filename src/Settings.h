@@ -12,6 +12,8 @@ namespace Settings
     inline REX::INI::Bool DisableInMapOverride{"Menus", "Disable In Map Override", false};
 
     inline REX::INI::I32 log_level{"Debug", "Log Level", 2};
+    inline REX::INI::I32 printNamesKey{"Debug", "Hotkey To Print Current Menu and Page Name", 0};
+    inline bool checkPrintKey = false;
 
     inline bool gameHasLoaded = false;
 

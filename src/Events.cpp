@@ -174,6 +174,13 @@ namespace Events
         }
     }
 
+    void CheckIfPrint(RE::ButtonEvent *btn)
+    {
+        if (!Settings::checkPrintKey || !btn->IsDown() || static_cast<int>(btn->GetIDCode()) != Settings::printNamesKey.GetValue())
+            return;
+        MCMManager::AddUiTask(MCMManager::PrintNames);
+    }
+
     RE::BSEventNotifyControl InputEvent::ProcessEvent(
         RE::InputEvent *const *a_event,
         RE::BSTEventSource<RE::InputEvent *> *) noexcept
@@ -190,6 +197,7 @@ namespace Events
                 if (auto btn = e->AsButtonEvent(); btn)
                 {
                     CheckShortcuts(btn);
+                    CheckIfPrint(btn);
                 }
             }
             return RE::BSEventNotifyControl::kContinue;
