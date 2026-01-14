@@ -126,7 +126,9 @@ namespace MCMManager
             return;
         }
         RE::GFxValue disabled;
-        auto view = GetJournalView();
+        RE::GFxMovieView *view = GetJournalView();
+        if (!view)
+            return;
         view->GetVariable(&disabled, (pageList + "disableSelection").c_str());
         if (disabled.IsBool() && disabled.GetBool())
         {
@@ -151,7 +153,9 @@ namespace MCMManager
             return;
         }
         RE::GFxValue disabled;
-        auto view = GetJournalView();
+        RE::GFxMovieView *view = GetJournalView();
+        if (!view)
+            return;
         view->GetVariable(&disabled, (modList + "disableSelection").c_str());
         if (disabled.IsBool() && disabled.GetBool())
         {
