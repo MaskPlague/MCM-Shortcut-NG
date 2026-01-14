@@ -66,7 +66,7 @@ namespace MCMManager
         if (!view)
             return false;
         RE::GFxValue state;
-        std::string _state = root + "_state";
+        std::string _state = modListPanel + "_state";
         view->GetVariable(&state, _state.c_str());
         if (!state.IsNumber())
             return false;
@@ -80,7 +80,7 @@ namespace MCMManager
         if (!view)
             return false;
         RE::GFxValue textVal;
-        std::string titleText = root + "_titleText";
+        std::string titleText = modListPanel + "_titleText";
         view->GetVariable(&textVal, titleText.c_str());
         if (!textVal.IsString())
             return false;
@@ -249,7 +249,7 @@ namespace MCMManager
         {
             logger::debug("The mod is not open but a mod is open, reverting to main MCM"sv);
             RE::GFxValue arg[1] = {4};
-            view->Invoke((root + "setState").c_str(), nullptr, arg, 1);
+            view->Invoke((modListPanel + "setState").c_str(), nullptr, arg, 1);
         }
 
         if (!theModOpen && currentInfo.openMod)

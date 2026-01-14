@@ -10,10 +10,11 @@ namespace MCMManager
     inline int modRetries = 0;
     inline std::string_view closedMenuName = "None";
 
-    inline std::string root = "_root.ConfigPanelFader.configPanel.contentHolder.modListPanel.";
-    inline std::string modList = root + "modListFader.list.";
-    inline std::string pageList = root + "subListFader.list.";
-    inline std::string showModList = root + "showList";
+    inline std::string configPanel = "_root.ConfigPanelFader.configPanel.";
+    inline std::string modListPanel = configPanel + "contentHolder.modListPanel.";
+    inline std::string modList = modListPanel + "modListFader.list.";
+    inline std::string pageList = modListPanel + "subListFader.list.";
+    inline std::string showModList = modListPanel + "showList";
 
     inline Settings::shortcutInfo currentInfo;
 
