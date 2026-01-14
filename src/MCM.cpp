@@ -56,6 +56,19 @@ namespace MCM
         view->Invoke((page + "onItemPress").c_str(), nullptr, args, 2);
     }
 
+    bool AModIsOpen()
+    {
+        RE::GFxMovieView *view = GetJournalView();
+        if (!view)
+            return false;
+        RE::GFxValue state;
+        std::string _state = root + "_state";
+        view->GetVariable(&state, _state.c_str());
+        if (!state.IsNumber())
+            return false;
+        return state.GetNumber() == 2;
+    }
+
     bool IsModAlreadyOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
@@ -66,35 +79,7 @@ namespace MCM
         view->GetVariable(&textVal, titleText.c_str());
         if (!textVal.IsString())
             return false;
-
-        return currentInfo.modNameTranslated == textVal.GetString();
-    }
-
-    bool AModIsOpen()
-    {
-        // TODO: Need a more reliable method it is returning true when it shouldn't, it picks up a previous mod
-        RE::GFxMovieView *view = GetJournalView();
-        if (!view)
-            return false;
-        RE::GFxValue disabled;
-        std::string disableSelection = modList + "disableSelection";
-        view->GetVariable(&disabled, disableSelection.c_str());
-        if (!disabled.IsBool())
-            return false;
-        return disabled.GetBool();
-    }
-
-    bool IsPageAlreadyOpen()
-    {
-        RE::GFxMovieView *view = GetJournalView();
-        if (!view)
-            return false;
-        RE::GFxValue pageName;
-        std::string activePageName = pageList + "listState.activeEntry.pageName";
-        view->GetVariable(&pageName, activePageName.c_str());
-        if (!pageName.IsString())
-            return false;
-        return currentInfo.pageName == pageName.GetString();
+        return currentInfo.modNameTranslated == textVal.GetString() && AModIsOpen();
     }
 
     bool APageIsOpen()
@@ -108,6 +93,19 @@ namespace MCM
         if (!pageName.IsString())
             return false;
         return true;
+    }
+
+    bool IsPageAlreadyOpen()
+    {
+        RE::GFxMovieView *view = GetJournalView();
+        if (!view)
+            return false;
+        RE::GFxValue pageName;
+        std::string activePageName = pageList + "listState.activeEntry.pageName";
+        view->GetVariable(&pageName, activePageName.c_str());
+        if (!pageName.IsString())
+            return false;
+        return currentInfo.pageName == pageName.GetString();
     }
 
     void OpenPage()
@@ -171,49 +169,47 @@ namespace MCM
         bool pageOpen = IsPageAlreadyOpen();
         bool aPageOpen = APageIsOpen();
         bool unlock = true;
-        /*logger::trace("MCM is Open:      {}", mcmOpen);
-        logger::trace("The Mod is open:  {}, supposed to be open:    {}", theModOpen, currentInfo.openMod);
-        logger::trace("A Mod is open:    {}", aModOpen);
-        logger::trace("The Page is open: {}, supposed to be open:    {}", pageOpen, currentInfo.openPage);
-        logger::trace("A Page is open:   {}", aPageOpen);*/
+        /*logger::trace("MCM is Open:      {}"sv, mcmOpen);
+        logger::trace("The Mod is open:  {},    to be open:    {}"sv, theModOpen, currentInfo.openMod);
+        logger::trace("A Mod is open:    {}"sv, aModOpen);
+        logger::trace("The Page is open: {},    to be open:    {}"sv, pageOpen, currentInfo.openPage);
+        logger::trace("A Page is open:   {}"sv, aPageOpen);*/
         if (mcmOpen && Settings::CanAlsoCloseMCM.GetValue() &&
             ((theModOpen && currentInfo.openMod && pageOpen && currentInfo.openPage) ||
              (theModOpen && currentInfo.openMod && !aPageOpen && !currentInfo.openPage) ||
              (theModOpen && !currentInfo.openMod) ||
              (!aModOpen && !currentInfo.openMod)))
         {
-            logger::trace("Mod/Page already open, closing");
+            logger::trace("Mod/Page already open, closing"sv);
             auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
             uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
             lock = false;
             return;
         }
 
-        if (!mcmOpen) // Main MCM is not already open then open it
+        if (!mcmOpen)
         {
-            logger::trace("MCM not open, opening");
+            logger::trace("MCM not open, opening"sv);
             view->Invoke("_root.QuestJournalFader.Menu_mc.ConfigPanelOpen", nullptr, nullptr, 0);
         }
 
         if (!theModOpen && aModOpen)
         {
-            logger::trace("Mod not open but a mod is open, reverting to main MCM");
-            RE::GFxValue arg[1] = {0};
-            view->Invoke("_root.ConfigPanelFader.configPanel.changeFocus", nullptr, arg, 1);
-            view->Invoke(showModList.c_str(), nullptr, nullptr, 0);
-            extraDelay = 300;
+            logger::trace("The mod is not open but a mod is open, reverting to main MCM"sv);
+            RE::GFxValue arg[1] = {4};
+            view->Invoke((root + "setState").c_str(), nullptr, arg, 1);
         }
 
         if (!theModOpen && currentInfo.openMod)
         {
-            logger::trace("The mod isn't open...");
-            DelayCall(OpenMod, currentInfo.modDelay + extraDelay);
+            logger::trace("The mod is not open..."sv);
+            DelayCall(OpenMod, currentInfo.modDelay);
             unlock = false;
         }
 
         if (theModOpen && !pageOpen && currentInfo.openPage)
         {
-            logger::trace("The mod is open but the page isn't...");
+            logger::trace("The mod is open but the page is not..."sv);
             DelayCall(OpenPage, 0);
             unlock = false;
         }
