@@ -134,18 +134,19 @@ namespace MCMManager
         return currentInfo.modNameTranslated == textVal.GetString() && IsAnyModOpen();
     }
 
-    // Is any mod's page open in the MCM
+    // Is any mod's page open in the MCM, if there are any entries in the optionsList
     bool IsAnyPageOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
             return false;
-        RE::GFxValue visible;
-        std::string savedIndex = configPanel + "contentHolder.optionsPanel.optionsList._visible";
-        view->GetVariable(&visible, savedIndex.c_str());
-        if (!visible.IsBool())
+        RE::GFxValue entryList;
+        std::string _entryList = configPanel + "contentHolder.optionsPanel.optionsList._entryList";
+        view->GetVariable(&entryList, _entryList.c_str());
+        if (!entryList.IsArray())
             return false;
-        return visible.GetBool();
+        return entryList.GetArraySize() > 0;
+
         // Left just in case, not really accurate as the activeEntry is kept until a new MCM mod is loaded
         /*RE::GFxValue pageName;
         std::string activePageName = pageList + "listState.activeEntry.pageName";
