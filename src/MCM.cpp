@@ -16,7 +16,7 @@ namespace MCMManager
     }
 
     // Delays a function call by delay (milliseconds)
-    void DelayCall(void (*func)(), int delay)
+    void DelayCallForUI(void (*func)(), int delay)
     {
         std::thread([func, delay]()
                     { std::this_thread::sleep_for(std::chrono::milliseconds(delay)); AddUiTask(func); })
@@ -56,7 +56,7 @@ namespace MCMManager
         }
         if (index == -1)
             return;
-        RE::GFxValue args[2] = {index, 0}; // 0 is keyboard input for compatibility with controller
+        RE::GFxValue args[2] = {index, 0};
         view->Invoke((page + "doSetSelectedIndex").c_str(), nullptr, args, 2);
         view->Invoke((page + "onItemPress").c_str(), nullptr, args, 2);
     }*/
@@ -92,6 +92,7 @@ namespace MCMManager
             if (!nameVal.IsString())
                 continue;
             const char *nameStr = nameVal.GetString();
+            logger::debug(">  {}: {},   index: {}"sv, varToGet, nameStr, i);
             if (item == nameStr || (std::strcmp(varToGet, "modName") == 0 && currentInfo.modNameTranslated == nameStr))
             {
                 index = i;
@@ -100,9 +101,7 @@ namespace MCMManager
         }
         if (index == -1)
             return;
-        RE::GFxValue args[2];
-        args[0].SetNumber(index);
-        args[1].SetNumber(0);
+        RE::GFxValue args[2] = {index, 0};
         pageObj.Invoke("doSetSelectedIndex", nullptr, args, 2);
         pageObj.Invoke("onItemPress", nullptr, args, 2);
     }
@@ -221,7 +220,7 @@ namespace MCMManager
         {
             logger::trace("Selection is disabled for _pageList, recalling with delay"sv);
             pageRetries++;
-            DelayCall(OpenPage, currentInfo.pageDelay);
+            DelayCallForUI(OpenPage, currentInfo.pageDelay);
             return;
         }
         logger::debug("Opening page"sv);
@@ -248,13 +247,13 @@ namespace MCMManager
         {
             logger::trace("Selection is disabled for _modList, recalling with delay"sv);
             modRetries++;
-            DelayCall(OpenMod, currentInfo.modDelay);
+            DelayCallForUI(OpenMod, currentInfo.modDelay);
             return;
         }
         logger::debug("Opening mod"sv);
         GetItemIndexFromEntryList(modList, "modName", currentInfo.modName);
         if (currentInfo.openPage)
-            DelayCall(OpenPage, currentInfo.pageDelay);
+            DelayCallForUI(OpenPage, currentInfo.pageDelay);
         else
             lock = false;
     }
@@ -346,20 +345,21 @@ namespace MCMManager
         {
             logger::debug("The mod is not open but a mod is open, reverting to main MCM"sv);
             RE::GFxValue arg[1] = {4};
+            // setState(TRANSITION_TO_LIST)
             view->Invoke((modListPanel + "setState").c_str(), nullptr, arg, 1);
         }
 
         if (!theModOpen && currentInfo.openMod)
         {
             logger::debug("The mod is not open..."sv);
-            DelayCall(OpenMod, currentInfo.modDelay);
+            DelayCallForUI(OpenMod, currentInfo.modDelay);
             unlock = false;
         }
 
         if (theModOpen && !pageOpen && currentInfo.openPage)
         {
             logger::debug("The mod is open but the page is not..."sv);
-            DelayCall(OpenPage, 0);
+            DelayCallForUI(OpenPage, 0);
             unlock = false;
         }
 
