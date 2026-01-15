@@ -9,7 +9,7 @@ namespace logger = SKSE::log;
 #include "json.hpp"
 using json = nlohmann::json;
 #include "Settings.h"
-#include "MCM.h"
+#include "MCMManager.h"
 #include "Events.h"
 using namespace std::literals;
 

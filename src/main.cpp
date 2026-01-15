@@ -5,7 +5,7 @@
 #include "REX/REX/Setting.h"
 #include "json.hpp"
 #include "Settings.h"
-#include "MCM.h"
+#include "MCMManager.h"
 #include "Events.h"
 // ---------------------------
 
