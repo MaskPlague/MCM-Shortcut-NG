@@ -7,7 +7,6 @@
 #include "Settings.h"
 #include "MCM.h"
 #include "Events.h"
-#include "Input.h"
 // ---------------------------
 
 namespace MCMShortcutNG
