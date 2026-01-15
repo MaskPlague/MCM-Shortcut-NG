@@ -1,18 +1,18 @@
 [
   {
-    "Modifier 1": 42,
-    "Modifier 2": 29,
-    "Hotkey": 47,
-    "Key Order Matters": false,
-    "Controller": false,
-    "Mod Name": "None",
-    "Mod Open Delay": 50,
-    "Page Name": "None",
-    "Page Open Delay": 500,
-    "Disable In Inventory": false,
-    "Disable In Dialogue": false,
-    "Disable In Magic": false,
-    "Disable In Map": false,
-    "Can Reload Settings": true
-  }
+		"Modifier 1": 42,
+		"Modifier 2": 29,
+		"Hotkey": 47,
+		"Key Order Matters": false,
+		"Controller": false,
+		"Mod Name": "None", 
+		"Mod Open Delay": 50,
+		"Page Name": "None",
+		"Page Open Delay": 500,
+		"Disable In Inventory": false,
+		"Disable In Dialogue": false,
+		"Disable In Magic": false,
+		"Disable In Map": false,
+		"Can Reload Settings": true
+	}
 ]
