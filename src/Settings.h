@@ -5,6 +5,7 @@ namespace Settings
     inline REX::INI::I32 SettingsThreshold{"General", "Settings Reload Threshold Milliseconds", 3000};
     inline REX::INI::Bool CanAlsoCloseMCM{"General", "Can Also Close Opened MCM", true};
     inline REX::INI::Bool ReturnToPreviousMenu{"General", "Returns to Previously Closed Menu", true};
+    inline REX::INI::Bool NoAutoInputSwitch{"General", "No Auto Input Switch", false};
 
     inline REX::INI::Bool DisableInDialogueOverride{"Menus", "Disable In Dialogue Override", false};
     inline REX::INI::Bool DisableInInventoryOverride{"Menus", "Disable In Inventory Override", false};

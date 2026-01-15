@@ -409,14 +409,23 @@ namespace MCMManager
         lock = true;
         if (menuName != RE::JournalMenu::MENU_NAME)
         {
-            auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
             if (menuName != "None")
             {
+                auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
+                if (!uiMessageQueue)
+                {
+                    logger::trace("Could not get uiMessageQueu to close menu.");
+                    lock = false;
+                    return;
+                }
                 uiMessageQueue->AddMessage(menuName, RE::UI_MESSAGE_TYPE::kHide, nullptr);
                 closedMenuName = menuName != RE::DialogueMenu::MENU_NAME ? menuName : "None";
             }
             awaitJournalMenu = true;
-            uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+            // Sending a uiMessage of kShow causes the fast scroll bug.
+            // uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+            // So we instead just use the pause menu input
+            Input::OpenJournalMenu();
         }
         else
             AddUiTask(OpenFromJournal);

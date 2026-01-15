@@ -26,5 +26,7 @@ namespace MCMManager
 
     void AddUiTask(void (*func)());
 
+    void DelayCallForUI(void (*func)(), int delay);
+
     bool IsMCMOpen();
 }

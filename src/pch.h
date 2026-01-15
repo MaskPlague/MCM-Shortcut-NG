@@ -11,6 +11,7 @@ using json = nlohmann::json;
 #include "Settings.h"
 #include "MCM.h"
 #include "Events.h"
+#include "Input.h"
 using namespace std::literals;
 
 /*struct ScopedTimer
