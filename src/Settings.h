@@ -17,6 +17,9 @@ namespace Settings
 
     inline bool gameHasLoaded = false;
 
+    inline float keyRepeatLong = 0.5;
+    inline float keyRepeatShort = 0.1;
+
     struct shortcutInfo
     {
         int modifier1 = 0;

@@ -214,11 +214,20 @@ namespace Settings
         return true;
     }
 
+    void GetKeyRepeatLongAndShort()
+    {
+        if (auto fMenuKeyRepeatLong = RE::GetINISetting("fMenuKeyRepeatLong:Interface"))
+            keyRepeatLong = fMenuKeyRepeatLong->GetFloat();
+        if (auto fMenuKeyRepeatShort = RE::GetINISetting("fMenuKeyRepeatShort:Interface"))
+            keyRepeatShort = fMenuKeyRepeatShort->GetFloat();
+    }
+
     void LoadINI()
     {
         settingStore->Load();
         SetLogLevel();
         settingStore->Save();
+        GetKeyRepeatLongAndShort();
         MCMManager::lock = false;
         checkPrintKey = printNamesKey.GetValue();
     }
