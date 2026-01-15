@@ -8,6 +8,15 @@ namespace MCMManager
         return journalMenu ? journalMenu->uiMovie.get() : nullptr;
     }
 
+    void FixKeyRepeat()
+    {
+        auto menuControls = RE::MenuControls::GetSingleton();
+        if (!menuControls)
+            return;
+        menuControls->directionHandler->keyRepeatLong = Settings::keyRepeatLong;   // Set these because sometimes they unset.
+        menuControls->directionHandler->keyRepeatShort = Settings::keyRepeatShort; // Setting these fixes the fast scroll bug
+    }
+
     // Adds a UI Task to the SKSE task interface
     void AddUiTask(void (*func)())
     {
@@ -329,6 +338,7 @@ namespace MCMManager
             if (Settings::ReturnToPreviousMenu.GetValue() && closedMenuName != "None")
             {
                 logger::debug("Reopening closed menu: {}", closedMenuName);
+                FixKeyRepeat();
                 uiMessageQueue->AddMessage(closedMenuName, RE::UI_MESSAGE_TYPE::kShow, nullptr);
             }
             closedMenuName = "None";
@@ -371,14 +381,12 @@ namespace MCMManager
     void OpenMCM()
     {
         auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
-        auto menuControls = RE::MenuControls::GetSingleton();
-        if (!uiMessageQueue || !menuControls)
+        if (!uiMessageQueue)
         {
             lock = false;
             return;
         }
-        menuControls->directionHandler->keyRepeatLong = Settings::keyRepeatLong; // Set these because sometimes they unset.
-        menuControls->directionHandler->keyRepeatShort = Settings::keyRepeatShort;
+        FixKeyRepeat();
         uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
     }
 
