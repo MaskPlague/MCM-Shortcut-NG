@@ -215,12 +215,21 @@ namespace Events
         const RE::MenuOpenCloseEvent *a_event,
         RE::BSTEventSource<RE::MenuOpenCloseEvent> *)
     {
-        if (!a_event || !a_event->opening || a_event->menuName != RE::JournalMenu::MENU_NAME || !MCMManager::awaitJournalMenu)
+        if (!a_event || !a_event->opening)
         {
             return RE::BSEventNotifyControl::kContinue;
         }
-        MCMManager::awaitJournalMenu = false;
-        MCMManager::AddUiTask(MCMManager::OpenFromJournal);
+        if (MCMManager::awaitJournalMenu && a_event->menuName == RE::JournalMenu::MENU_NAME)
+        {
+            MCMManager::awaitJournalMenu = false;
+            MCMManager::AddUiTask(MCMManager::OpenFromJournal);
+        }
+        else if (MCMManager::reopeningClosedMenu && a_event->menuName == MCMManager::closedMenuName)
+        {
+            MCMManager::reopeningClosedMenu = false;
+            MCMManager::FixKeyRepeat();
+            MCMManager::closedMenuName = "None";
+        }
         return RE::BSEventNotifyControl::kContinue;
     }
 

@@ -13,6 +13,7 @@ namespace MCMManager
         auto menuControls = RE::MenuControls::GetSingleton();
         if (!menuControls)
             return;
+
         menuControls->directionHandler->keyRepeatLong = Settings::keyRepeatLong;   // Set these because sometimes they unset.
         menuControls->directionHandler->keyRepeatShort = Settings::keyRepeatShort; // Setting these fixes the fast scroll bug
     }
@@ -338,10 +339,9 @@ namespace MCMManager
             if (Settings::ReturnToPreviousMenu.GetValue() && closedMenuName != "None")
             {
                 logger::debug("Reopening closed menu: {}", closedMenuName);
-                FixKeyRepeat();
+                reopeningClosedMenu = true;
                 uiMessageQueue->AddMessage(closedMenuName, RE::UI_MESSAGE_TYPE::kShow, nullptr);
             }
-            closedMenuName = "None";
             lock = false;
             return;
         }
