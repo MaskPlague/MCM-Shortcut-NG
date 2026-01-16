@@ -13,6 +13,7 @@
 		"Disable In Dialogue": false,
 		"Disable In Magic": false,
 		"Disable In Map": false,
+		"Disable In Favorites": false,
 		"Can Reload Settings": true
 	}
 ]
