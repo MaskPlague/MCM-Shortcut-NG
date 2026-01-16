@@ -345,8 +345,8 @@ namespace MCMManager
             if (Settings::ReturnToPreviousMenu.GetValue() && closedMenuName != "None")
             {
                 logger::debug("Reopening closed menu: {}", closedMenuName);
-                reopeningClosedMenu = true;
                 uiMessageQueue->AddMessage(closedMenuName, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+                closedMenuName = "None";
             }
             lock = false;
             return;
@@ -384,7 +384,7 @@ namespace MCMManager
             lock = false;
     }
 
-    void OpenMCM()
+    void OpenJournal()
     {
         auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
         if (!uiMessageQueue)
@@ -392,7 +392,6 @@ namespace MCMManager
             lock = false;
             return;
         }
-        FixKeyRepeat();
         uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
     }
 
@@ -456,7 +455,7 @@ namespace MCMManager
                 closedMenuName = menuName != RE::DialogueMenu::MENU_NAME ? menuName : "None";
             }
             awaitJournalMenu = true;
-            OpenMCM();
+            OpenJournal();
         }
         else
             AddUiTask(OpenFromJournal);

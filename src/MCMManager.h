@@ -5,7 +5,6 @@ namespace MCMManager
     inline bool openMod = false;
     inline bool openPage = false;
     inline bool awaitJournalMenu = false;
-    inline bool reopeningClosedMenu = false;
     inline bool lock = false;
     inline int pageRetries = 0;
     inline int modRetries = 0;

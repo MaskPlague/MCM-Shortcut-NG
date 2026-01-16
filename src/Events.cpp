@@ -280,18 +280,23 @@ namespace Events
         {
             return RE::BSEventNotifyControl::kContinue;
         }
+        RE::UI_MENU_FLAGS::kUsesMovementToDirection;
+        auto ui = RE::UI::GetSingleton();
+        if (ui)
+        {
+            auto menu = ui->GetMenu(a_event->menuName);
             // if (menu)
             //  PrintMenuFlags(menu.get(), a_event->menuName.c_str());
+            if (menu && ((menu->menuFlags & RE::UI_MENU_FLAGS::kUsesCursor) != RE::UI_MENU_FLAGS::kNone))
+            {
+                MCMManager::FixKeyRepeat();
+            }
+        }
+
         if (MCMManager::awaitJournalMenu && a_event->menuName == RE::JournalMenu::MENU_NAME)
         {
             MCMManager::awaitJournalMenu = false;
             MCMManager::AddUiTask(MCMManager::OpenFromJournal);
-        }
-        else if (MCMManager::reopeningClosedMenu && a_event->menuName == MCMManager::closedMenuName)
-        {
-            MCMManager::reopeningClosedMenu = false;
-            MCMManager::FixKeyRepeat();
-            MCMManager::closedMenuName = "None";
         }
         return RE::BSEventNotifyControl::kContinue;
     }
