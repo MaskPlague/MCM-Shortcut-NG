@@ -211,6 +211,67 @@ namespace Events
         return &singleton;
     }
 
+    /*void PrintMenuFlags(RE::IMenu *a_menu, const std::string &a_menuName)
+    {
+        if (!a_menu)
+        {
+            SKSE::log::trace("PrintMenuFlags: Menu '{}' is null.", a_menuName);
+            return;
+        }
+
+        using Flag = RE::UI_MENU_FLAGS;
+
+        // Vector of pairs to preserve bit-order (Bit 0 -> Bit 27)
+        std::vector<std::pair<Flag, std::string>> flagMap = {
+            {Flag::kPausesGame, "kPausesGame (Bit 0)"},
+            {Flag::kAlwaysOpen, "kAlwaysOpen (Bit 1)"},
+            {Flag::kUsesCursor, "kUsesCursor (Bit 2)"},
+            {Flag::kUsesMenuContext, "kUsesMenuContext (Bit 3)"},
+            {Flag::kModal, "kModal (Bit 4)"},
+            {Flag::kFreezeFrameBackground, "kFreezeFrameBackground (Bit 5)"},
+            {Flag::kOnStack, "kOnStack (Bit 6)"},
+            {Flag::kDisablePauseMenu, "kDisablePauseMenu (Bit 7)"},
+            {Flag::kRequiresUpdate, "kRequiresUpdate (Bit 8)"},
+            {Flag::kTopmostRenderedMenu, "kTopmostRenderedMenu (Bit 9)"},
+            {Flag::kUpdateUsesCursor, "kUpdateUsesCursor (Bit 10)"},
+            {Flag::kAllowSaving, "kAllowSaving (Bit 11)"},
+            {Flag::kRendersOffscreenTargets, "kRendersOffscreenTargets (Bit 12)"},
+            {Flag::kInventoryItemMenu, "kInventoryItemMenu (Bit 13)"},
+            {Flag::kDontHideCursorWhenTopmost, "kDontHideCursorWhenTopmost (Bit 14)"},
+            {Flag::kCustomRendering, "kCustomRendering (Bit 15)"},
+            {Flag::kAssignCursorToRenderer, "kAssignCursorToRenderer (Bit 16)"},
+            {Flag::kApplicationMenu, "kApplicationMenu (Bit 17)"},
+            {Flag::kHasButtonBar, "kHasButtonBar (Bit 18)"},
+            {Flag::kIsTopButtonBar, "kIsTopButtonBar (Bit 19)"},
+            {Flag::kAdvancesUnderPauseMenu, "kAdvancesUnderPauseMenu (Bit 20)"},
+            {Flag::kRendersUnderPauseMenu, "kRendersUnderPauseMenu (Bit 21)"},
+            {Flag::kUsesBlurredBackground, "kUsesBlurredBackground (Bit 22)"},
+            {Flag::kCompanionAppAllowed, "kCompanionAppAllowed (Bit 23)"},
+            {Flag::kFreezeFramePause, "kFreezeFramePause (Bit 24)"},
+            {Flag::kSkipRenderDuringFreezeFrameScreenshot, "kSkipRenderDuringFreezeFrameScreenshot (Bit 25)"},
+            {Flag::kLargeScaleformRenderCacheMode, "kLargeScaleformRenderCacheMode (Bit 26)"},
+            {Flag::kUsesMovementToDirection, "kUsesMovementToDirection (Bit 27)"}};
+
+        SKSE::log::trace("====== Flags for Menu: {} ======", a_menuName);
+
+        bool anyFound = false;
+
+        for (const auto &[flag, name] : flagMap)
+        {
+            if ((a_menu->menuFlags & flag) != Flag::kNone)
+            {
+                SKSE::log::trace("  [X] {}", name);
+                anyFound = true;
+            }
+        }
+
+        if (!anyFound)
+        {
+            SKSE::log::trace("  [ ] No flags set (kNone).");
+        }
+        SKSE::log::trace("=========================================");
+    }*/
+
     RE::BSEventNotifyControl UIEvent::ProcessEvent(
         const RE::MenuOpenCloseEvent *a_event,
         RE::BSTEventSource<RE::MenuOpenCloseEvent> *)
@@ -219,6 +280,8 @@ namespace Events
         {
             return RE::BSEventNotifyControl::kContinue;
         }
+            // if (menu)
+            //  PrintMenuFlags(menu.get(), a_event->menuName.c_str());
         if (MCMManager::awaitJournalMenu && a_event->menuName == RE::JournalMenu::MENU_NAME)
         {
             MCMManager::awaitJournalMenu = false;
