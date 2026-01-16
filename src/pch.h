@@ -11,6 +11,7 @@ using json = nlohmann::json;
 #include "Settings.h"
 #include "MCMManager.h"
 #include "Events.h"
+#include "Papyrus.h"
 using namespace std::literals;
 
 /*struct ScopedTimer

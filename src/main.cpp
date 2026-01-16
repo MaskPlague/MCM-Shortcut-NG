@@ -7,6 +7,7 @@
 #include "Settings.h"
 #include "MCMManager.h"
 #include "Events.h"
+#include "Papyrus.h"
 // ---------------------------
 
 namespace MCMShortcutNG
@@ -28,6 +29,13 @@ namespace MCMShortcutNG
         }
     }
 
+    bool RegisterPapyrus(RE::BSScript::IVirtualMachine *vm)
+    {
+        logger::info("Registering for papyrus...");
+        Papyrus::Register(vm);
+        return true;
+    }
+
     extern "C" DLLEXPORT bool SKSEPlugin_Load(const SKSE::LoadInterface *a_skse)
     {
         SKSE::Init(a_skse);
@@ -35,6 +43,7 @@ namespace MCMShortcutNG
         Settings::InitINI();
         Settings::LoadINI();
         SKSE::GetMessagingInterface()->RegisterListener(MessageListener);
+        SKSE::GetPapyrusInterface()->Register(RegisterPapyrus);
         logger::info("MCM Shortcut NG Plugin Loaded"sv);
         return true;
     }
