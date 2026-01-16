@@ -225,7 +225,10 @@ namespace MCMManager
         RE::GFxValue disabled;
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
+        {
+            lock = false;
             return;
+        }
         view->GetVariable(&disabled, (pageList + "disableSelection").c_str());
         if (disabled.IsBool() && disabled.GetBool())
         {
@@ -252,7 +255,10 @@ namespace MCMManager
         RE::GFxValue disabled;
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
+        {
+            lock = false;
             return;
+        }
         view->GetVariable(&disabled, (modList + "disableSelection").c_str());
         if (disabled.IsBool() && disabled.GetBool())
         {
