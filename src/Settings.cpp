@@ -88,6 +88,9 @@ namespace Settings
             if (hotkeyConfig.contains("Disable In Map"))
                 newInfo.disableInMap = hotkeyConfig["Disable In Map"].get<bool>();
 
+            if (hotkeyConfig.contains("Disable In Favorites"))
+                newInfo.disableInFavorites = hotkeyConfig["Disable In Favorites"].get<bool>();
+
             if (hotkeyConfig.contains("Can Reload Settings"))
                 newInfo.canReloadSettings = hotkeyConfig["Can Reload Settings"].get<bool>();
 
@@ -220,6 +223,10 @@ namespace Settings
             keyRepeatLong = fMenuKeyRepeatLong->GetFloat();
         if (auto fMenuKeyRepeatShort = RE::GetINISetting("fMenuKeyRepeatShort:Interface"))
             keyRepeatShort = fMenuKeyRepeatShort->GetFloat();
+        if (keyRepeatLong <= 0)
+            keyRepeatLong = 0.5f;
+        if (keyRepeatShort <= 0)
+            keyRepeatShort = 0.3f;
     }
 
     void LoadINI()

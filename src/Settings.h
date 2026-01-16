@@ -10,6 +10,7 @@ namespace Settings
     inline REX::INI::Bool DisableInInventoryOverride{"Menus", "Disable In Inventory Override", false};
     inline REX::INI::Bool DisableInMagicOverride{"Menus", "Disable In Magic Override", false};
     inline REX::INI::Bool DisableInMapOverride{"Menus", "Disable In Map Override", false};
+    inline REX::INI::Bool DisableInFavoritesOverride{"Menus", "Disable In Favorites Override", false};
 
     inline REX::INI::I32 log_level{"Debug", "Log Level", 2};
     inline REX::INI::I32 printNamesKey{"Debug", "Hotkey To Print Current Menu and Page Name", 0};
@@ -41,6 +42,7 @@ namespace Settings
         bool disableInDialogue = false;
         bool disableInMagic = false;
         bool disableInMap = false;
+        bool disableInFavorites = false;
 
         bool shortcutHit = false;
         bool stillHeld = false;

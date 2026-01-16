@@ -422,6 +422,12 @@ namespace MCMManager
             else
                 menuName = RE::MagicMenu::MENU_NAME;
 
+        if (ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
+            if (Settings::DisableInFavoritesOverride.GetValue() || currentInfo.disableInFavorites)
+                return;
+            else
+                menuName = RE::FavoritesMenu::MENU_NAME;
+
         if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
             return;
 
