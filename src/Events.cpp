@@ -127,6 +127,7 @@ namespace Events
             }
             shortcut.shortcutHit = false;
             shortcut.otherKeyHit = false;
+            shortcut.stillHeld = false;
             shortcut.hotkeyOrder = -1;
             shortcut.modifier1Order = -1;
             shortcut.modifier2Order = -1;
@@ -196,6 +197,8 @@ namespace Events
             {
                 if (auto btn = e->AsButtonEvent(); btn)
                 {
+                    if (!btn->GetIDCode())
+                        return RE::BSEventNotifyControl::kContinue;
                     CheckShortcuts(btn);
                     CheckIfPrint(btn);
                 }
@@ -215,7 +218,7 @@ namespace Events
     {
         if (!a_menu)
         {
-            SKSE::log::trace("PrintMenuFlags: Menu '{}' is null.", a_menuName);
+            logger::trace("PrintMenuFlags: Menu '{}' is null.", a_menuName);
             return;
         }
 
@@ -252,7 +255,7 @@ namespace Events
             {Flag::kLargeScaleformRenderCacheMode, "kLargeScaleformRenderCacheMode (Bit 26)"},
             {Flag::kUsesMovementToDirection, "kUsesMovementToDirection (Bit 27)"}};
 
-        SKSE::log::trace("====== Flags for Menu: {} ======", a_menuName);
+        logger::trace("====== Flags for Menu: {} ======", a_menuName);
 
         bool anyFound = false;
 
@@ -260,16 +263,16 @@ namespace Events
         {
             if ((a_menu->menuFlags & flag) != Flag::kNone)
             {
-                SKSE::log::trace("  [X] {}", name);
+                logger::trace("  [X] {}", name);
                 anyFound = true;
             }
         }
 
         if (!anyFound)
         {
-            SKSE::log::trace("  [ ] No flags set (kNone).");
+            logger::trace("  [ ] No flags set (kNone).");
         }
-        SKSE::log::trace("=========================================");
+        logger::trace("=========================================");
     }*/
 
     RE::BSEventNotifyControl UIEvent::ProcessEvent(
