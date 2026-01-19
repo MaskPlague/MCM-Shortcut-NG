@@ -33,6 +33,13 @@ namespace MCMManager
             .detach();
     }
 
+    void DelayCallForTask(void (*func)(), int delay)
+    {
+        std::thread([func, delay]()
+                    { std::this_thread::sleep_for(std::chrono::milliseconds(delay)); SKSE::GetTaskInterface()->AddTask([func](){func();}); })
+            .detach();
+    }
+
     // Old method
     // Gets the index of the item in the entry list of the page and selects and clicks it
     /*void GetItemIndexFromEntryList(std::string page, const char *varToGet, std::string item)
@@ -72,24 +79,24 @@ namespace MCMManager
     }*/
 
     // Gets the index of the item in the entry list of the page and selects and clicks it
-    void GetItemIndexFromEntryList(std::string pagePath, const char *varToGet, std::string item)
+    bool GetItemIndexFromEntryList(std::string pagePath, const char *varToGet, std::string item)
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
-            return;
+            return false;
         RE::GFxValue pageObj;
         view->GetVariable(&pageObj, pagePath.c_str());
         if (!pageObj.IsObject())
-            return;
+            return false;
         RE::GFxValue entryList;
         pageObj.GetMember("_entryList", &entryList);
         if (!entryList.IsArray())
-            return;
+            return false;
         uint32_t length = entryList.GetArraySize();
         if (length == 0)
         {
             logger::debug("No entries to check for {}s, consider increasing delay"sv, varToGet, length);
-            return;
+            return false;
         }
         logger::debug("Number of entries to check for {}s: {}"sv, varToGet, length);
         int index = -1;
@@ -110,10 +117,11 @@ namespace MCMManager
             }
         }
         if (index == -1)
-            return;
+            return false;
         RE::GFxValue args[2] = {index, 0};
         pageObj.Invoke("doSetSelectedIndex", nullptr, args, 2);
         pageObj.Invoke("onItemPress", nullptr, args, 2);
+        return true;
     }
 
     // Is any mod open in the MCM
@@ -238,7 +246,8 @@ namespace MCMManager
             return;
         }
         logger::debug("Opening page"sv);
-        GetItemIndexFromEntryList(pageList, "pageName", currentInfo.pageName);
+        if (GetItemIndexFromEntryList(pageList, "pageName", currentInfo.pageName))
+            FixKeyRepeat();
         lock = false;
     }
 
@@ -268,11 +277,15 @@ namespace MCMManager
             return;
         }
         logger::debug("Opening mod"sv);
-        GetItemIndexFromEntryList(modList, "modName", currentInfo.modName);
+        bool fix = GetItemIndexFromEntryList(modList, "modName", currentInfo.modName);
         if (currentInfo.openPage)
             DelayCallForUI(OpenPage, currentInfo.pageDelay);
         else
+        {
+            if (fix)
+                FixKeyRepeat();
             lock = false;
+        }
     }
 
     // Is the MCM currently open, checks the config panel's alpha
@@ -320,6 +333,7 @@ namespace MCMManager
         }
         RE::GFxValue args[2] = {2, false};
         view->Invoke("_root.QuestJournalFader.Menu_mc.RestoreSavedSettings", nullptr, args, 2);
+        FixKeyRepeat();
         modRetries = 0;
         pageRetries = 0;
         bool mcmOpen = IsMCMOpen();
@@ -392,6 +406,7 @@ namespace MCMManager
             lock = false;
             return;
         }
+        FixKeyRepeat();
         uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
     }
 
@@ -452,6 +467,10 @@ namespace MCMManager
                     return;
                 }
                 uiMessageQueue->AddMessage(menuName, RE::UI_MESSAGE_TYPE::kHide, nullptr);
+                if (menuName == RE::MagicMenu::MENU_NAME ||
+                    menuName == RE::InventoryMenu::MENU_NAME ||
+                    menuName == RE::MapMenu::MENU_NAME)
+                    uiMessageQueue->AddMessage(RE::TweenMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
                 closedMenuName = menuName != RE::DialogueMenu::MENU_NAME ? menuName : "None";
             }
             awaitJournalMenu = true;

@@ -214,7 +214,7 @@ namespace Events
         return &singleton;
     }
 
-    /*void PrintMenuFlags(RE::IMenu *a_menu, const std::string &a_menuName)
+    void PrintMenuFlags(RE::IMenu *a_menu, const std::string &a_menuName)
     {
         if (!a_menu)
         {
@@ -224,7 +224,6 @@ namespace Events
 
         using Flag = RE::UI_MENU_FLAGS;
 
-        // Vector of pairs to preserve bit-order (Bit 0 -> Bit 27)
         std::vector<std::pair<Flag, std::string>> flagMap = {
             {Flag::kPausesGame, "kPausesGame (Bit 0)"},
             {Flag::kAlwaysOpen, "kAlwaysOpen (Bit 1)"},
@@ -273,7 +272,7 @@ namespace Events
             logger::trace("  [ ] No flags set (kNone).");
         }
         logger::trace("=========================================");
-    }*/
+    }
 
     RE::BSEventNotifyControl UIEvent::ProcessEvent(
         const RE::MenuOpenCloseEvent *a_event,
@@ -288,10 +287,11 @@ namespace Events
         if (ui)
         {
             auto menu = ui->GetMenu(a_event->menuName);
-            // if (menu)
-            //  PrintMenuFlags(menu.get(), a_event->menuName.c_str());
-            if (menu && ((menu->menuFlags & RE::UI_MENU_FLAGS::kUsesCursor) != RE::UI_MENU_FLAGS::kNone))
+            if (Settings::log_level.GetValue() == 4)
+                PrintMenuFlags(menu.get(), a_event->menuName.c_str());
+            if (menu && menu->menuFlags.any(RE::UI_MENU_FLAGS::kUpdateUsesCursor, RE::UI_MENU_FLAGS::kUsesCursor))
             {
+                logger::trace("Calling FixKeyRepeat()");
                 MCMManager::FixKeyRepeat();
             }
         }

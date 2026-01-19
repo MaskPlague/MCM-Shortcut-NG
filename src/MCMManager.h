@@ -28,6 +28,8 @@ namespace MCMManager
 
     void DelayCallForUI(void (*func)(), int delay);
 
+    void DelayCallForTask(void (*func)(), int delay);
+
     bool IsMCMOpen();
 
     void FixKeyRepeat();
