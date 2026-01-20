@@ -1,4 +1,8 @@
-[
+[	
+	{
+		"_KeyCodeComment": "The list of key codes can be found here: https://ck.uesp.net/wiki/Input_Script",
+		"_KeyCodeComment2": "Other key codes can be found by setting the log level to 4, hitting keys, and checking the log."
+	},
   {
 		"Modifier 1": 42,
 		"Modifier 2": 29,
