@@ -33,6 +33,11 @@ namespace Papyrus
         return true;
     }
 
+    bool IsInstalled(RE::StaticFunctionTag *)
+    {
+        return true;
+    }
+
     void Register(RE::BSScript::IVirtualMachine *vm)
     {
         vm->RegisterFunction(
@@ -43,6 +48,10 @@ namespace Papyrus
             "FixKeys",
             "MCMShortcutNG",
             FixKeys);
+        vm->RegisterFunction(
+            "IsInstalled",
+            "MCMShortcutNG",
+            IsInstalled);
         logger::info("Registered MCMShortcutNG's OpenMenu papyrus function");
     }
 }

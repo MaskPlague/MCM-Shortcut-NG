@@ -6,7 +6,7 @@ includes("lib/commonlibsse-ng")
 
 -- set project
 set_project("MCMHotkeyNG")
-set_version("0.0.6")
+set_version("0.0.7")
 set_license("GPL-3.0")
 
 -- set defaults

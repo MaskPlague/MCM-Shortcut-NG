@@ -65,6 +65,8 @@ namespace Settings
         for (auto hotkeyConfig : jsonData)
         {
             shortcutInfo newInfo;
+            if (hotkeyConfig.contains("_KeyCodeComment"))
+                continue;
 
             if (hotkeyConfig.contains("Modifier 1"))
                 newInfo.modifier1 = hotkeyConfig["Modifier 1"].get<int>();
