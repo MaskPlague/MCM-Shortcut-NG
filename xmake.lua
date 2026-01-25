@@ -23,6 +23,8 @@ add_rules("plugin.vsxmake.autoupdate")
 -- set config
 set_config("rex_ini", true)
 
+add_cxflags("/Zc:preprocessor")
+
 -- targets
 target("MCMShortcutNG")
     -- add dependencies to target

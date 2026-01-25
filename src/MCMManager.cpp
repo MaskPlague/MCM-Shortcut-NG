@@ -14,8 +14,8 @@ namespace MCMManager
         if (!menuControls)
             return;
 
-        menuControls->directionHandler->keyRepeatLong = Settings::keyRepeatLong;   // Set these because sometimes they unset.
-        menuControls->directionHandler->keyRepeatShort = Settings::keyRepeatShort; // Setting these fixes the fast scroll bug
+        menuControls->directionHandler->menuKeyRepeatLong = Settings::keyRepeatLong;   // Set these because sometimes they unset.
+        menuControls->directionHandler->menuKeyRepeatShort = Settings::keyRepeatShort; // Setting these fixes the fast scroll bug
     }
 
     // Adds a UI Task to the SKSE task interface
