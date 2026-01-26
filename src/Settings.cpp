@@ -196,13 +196,6 @@ namespace Settings
                 break;
             }
         }
-        if (!invalid && shortcutInfos.size() == 0)
-        {
-            invalid = true;
-            message =
-                "- MCM Shortcut NG -\nYou have no shortcuts defined in your MCMShortcut.json "
-                "or the json failed to load likely due to improper formatting.";
-        }
         if (invalid)
         {
             shortcutInfos.clear();
