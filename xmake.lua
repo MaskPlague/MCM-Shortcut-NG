@@ -6,7 +6,7 @@ includes("lib/commonlibsse-ng")
 
 -- set project
 set_project("MCMHotkeyNG")
-set_version("0.0.7")
+set_version("0.0.8")
 set_license("GPL-3.0")
 
 -- set defaults
@@ -23,7 +23,8 @@ add_rules("plugin.vsxmake.autoupdate")
 -- set config
 set_config("rex_ini", true)
 
-add_cxflags("/Zc:preprocessor")
+-- CommonLibSSE-NG v4.0.0+
+add_cxxflags("cl::/Zc:preprocessor")
 
 -- targets
 target("MCMShortcutNG")
