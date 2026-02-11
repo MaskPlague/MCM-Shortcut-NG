@@ -448,7 +448,7 @@ namespace MCMManager
             else
                 menuName = RE::FavoritesMenu::MENU_NAME;
 
-        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME))
+        if (ui->IsMenuOpen(RE::MainMenu::MENU_NAME) || ui->IsMenuOpen(RE::Console::MENU_NAME))
             return;
 
         if (ui->IsMenuOpen(RE::JournalMenu::MENU_NAME))
