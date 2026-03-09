@@ -62,6 +62,14 @@ namespace Settings
         std::string pageName = "None";
         std::string pageNameTranslated = "None";
         int pageDelay = 500;
+
+        bool returnToClosed = false;
+        bool hasOpened = false;
+        bool shouldReturn = false;
+        std::string lastModNameTr = "None";
+        std::string lastPageNameTr = "None";
+        int lastModDelay = 50;
+        int lastPageDelay = 500;
     };
 
     inline std::vector<shortcutInfo> shortcutInfos;

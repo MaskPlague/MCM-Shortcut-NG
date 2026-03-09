@@ -40,43 +40,12 @@ namespace MCMManager
             .detach();
     }
 
-    // Old method
-    // Gets the index of the item in the entry list of the page and selects and clicks it
-    /*void GetItemIndexFromEntryList(std::string page, const char *varToGet, std::string item)
+    bool isTranslationKey(const char *str)
     {
-        RE::GFxMovieView *view = GetJournalView();
-        if (!view)
-            return;
-        RE::GFxValue length;
-        std::string entryList = page + "_entryList.";
-        view->GetVariable(&length, (entryList + "length").c_str());
-        if (!length.IsNumber())
-            return;
-        if (length.GetNumber() == 0)
-            logger::debug("No entries to check for {}s, consider increasing delay"sv, varToGet, length.GetNumber());
-        else
-            logger::debug("Number of entries to check for {}s: {}"sv, varToGet, length.GetNumber());
-        int index = -1;
-        for (int i = 0; i < length.GetNumber(); i++)
-        {
-            RE::GFxValue name;
-            view->GetVariable(&name, (entryList + std::to_string(i) + varToGet).c_str());
-            if (!name.IsString())
-                continue;
-            const char *nameStr = name.GetString();
-            logger::debug(">  {}: {},   index: {}"sv, varToGet, nameStr, i);
-            if (item == nameStr || (std::strcmp(varToGet, ".modName") == 0 && currentInfo.modNameTranslated == nameStr))
-            {
-                index = i;
-                break;
-            }
-        }
-        if (index == -1)
-            return;
-        RE::GFxValue args[2] = {index, 0};
-        view->Invoke((page + "doSetSelectedIndex").c_str(), nullptr, args, 2);
-        view->Invoke((page + "onItemPress").c_str(), nullptr, args, 2);
-    }*/
+        if (std::strlen(str) > 0 && str[0] == '$')
+            return true;
+        return false;
+    }
 
     // Gets the index of the item in the entry list of the page and selects and clicks it
     bool GetItemIndexFromEntryList(std::string pagePath, const char *varToGet, std::string item)
@@ -109,8 +78,16 @@ namespace MCMManager
             if (!nameVal.IsString())
                 continue;
             const char *nameStr = nameVal.GetString();
-            logger::debug(">  {}: {},   index: {}"sv, varToGet, nameStr, i);
-            if (item == nameStr || (std::strcmp(varToGet, "modName") == 0 && currentInfo.modNameTranslated == nameStr))
+
+            std::string translated = "";
+            if (isTranslationKey(nameStr))
+                SKSE::Translation::Translate(nameStr, translated);
+            else
+                translated = nameStr;
+            logger::debug(">  {}: {}, translation: {}   index: {}"sv, varToGet, nameStr, translated, i);
+            if (item == nameStr ||
+                (std::strcmp(varToGet, "modName") == 0 && modNameTranslated == translated) ||
+                (std::strcmp(varToGet, "pageName") == 0 && pageNameTranslated == translated))
             {
                 index = i;
                 break;
@@ -139,17 +116,17 @@ namespace MCMManager
     }
 
     // Is the currentInfo mod open in the MCM
-    bool IsModAlreadyOpen()
+    std::pair<bool, std::string> IsModAlreadyOpen()
     {
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
-            return false;
+            return std::pair(false, std::string{"None"});
         RE::GFxValue textVal;
         std::string titleText = modListPanel + "_titleText";
         view->GetVariable(&textVal, titleText.c_str());
         if (!textVal.IsString())
-            return false;
-        return currentInfo.modNameTranslated == textVal.GetString() && IsAnyModOpen();
+            return std::pair(false, std::string{"None"});
+        return std::pair(modName == textVal.GetString() && IsAnyModOpen(), textVal.GetString());
     }
 
     // Is any mod's page open in the MCM, if there are any entries in the optionsList
@@ -164,28 +141,21 @@ namespace MCMManager
         if (!entryList.IsArray())
             return false;
         return entryList.GetArraySize() > 0;
-
-        // Left just in case, not really accurate as the activeEntry is kept until a new MCM mod is loaded
-        /*RE::GFxValue pageName;
-        std::string activePageName = pageList + "listState.activeEntry.pageName";
-        view->GetVariable(&pageName, activePageName.c_str());
-        if (!pageName.IsString())
-            return false;
-        return true;*/
     }
 
     // Is the currentInfo page open in the MCM
-    bool IsPageAlreadyOpen()
+    std::pair<bool, std::string> IsPageAlreadyOpen()
     {
+
         RE::GFxMovieView *view = GetJournalView();
         if (!view)
-            return false;
-        RE::GFxValue pageName;
+            return std::pair(false, std::string{"None"});
+        RE::GFxValue retPageName;
         std::string activePageName = pageList + "listState.activeEntry.pageName";
-        view->GetVariable(&pageName, activePageName.c_str());
-        if (!pageName.IsString())
-            return false;
-        return currentInfo.pageName == pageName.GetString();
+        view->GetVariable(&retPageName, activePageName.c_str());
+        if (!retPageName.IsString())
+            return std::pair(false, std::string{"None"});
+        return std::pair(pageName == retPageName.GetString(), retPageName.GetString());
     }
 
     void PrintNames()
@@ -203,17 +173,17 @@ namespace MCMManager
         std::string modNameStr = "Could Not Be Found";
         std::string pageNameStr = "Could Not Be Found";
         std::string message = "- MCM Shortcut NG -\nMod Name: ";
-        RE::GFxValue modName;
-        view->GetVariable(&modName, (modListPanel + "_titleText").c_str());
-        if (modName.IsString())
-            modNameStr = modName.GetString();
+        RE::GFxValue retModName;
+        view->GetVariable(&retModName, (modListPanel + "_titleText").c_str());
+        if (retModName.IsString())
+            modNameStr = retModName.GetString();
         message = message + modNameStr;
         if (IsAnyPageOpen())
         {
-            RE::GFxValue pageName;
-            view->GetVariable(&pageName, (pageList + "listState.activeEntry.pageName").c_str());
-            if (pageName.IsString())
-                pageNameStr = pageName.GetString();
+            RE::GFxValue retPageName;
+            view->GetVariable(&retPageName, (pageList + "listState.activeEntry.pageName").c_str());
+            if (retPageName.IsString())
+                pageNameStr = retPageName.GetString();
             message = message + "\nPage Name: " + pageNameStr;
         }
 
@@ -242,11 +212,11 @@ namespace MCMManager
         {
             logger::trace("Selection is disabled for _pageList, recalling with delay"sv);
             pageRetries++;
-            DelayCallForUI(OpenPage, currentInfo.pageDelay);
+            DelayCallForUI(OpenPage, pageDelay);
             return;
         }
         logger::debug("Opening page"sv);
-        if (GetItemIndexFromEntryList(pageList, "pageName", currentInfo.pageName))
+        if (GetItemIndexFromEntryList(pageList, "pageName", pageName))
             FixKeyRepeat();
         lock = false;
     }
@@ -273,13 +243,13 @@ namespace MCMManager
         {
             logger::trace("Selection is disabled for _modList, recalling with delay"sv);
             modRetries++;
-            DelayCallForUI(OpenMod, currentInfo.modDelay);
+            DelayCallForUI(OpenMod, modDelay);
             return;
         }
         logger::debug("Opening mod"sv);
-        bool fix = GetItemIndexFromEntryList(modList, "modName", currentInfo.modName);
-        if (currentInfo.openPage)
-            DelayCallForUI(OpenPage, currentInfo.pageDelay);
+        bool fix = GetItemIndexFromEntryList(modList, "modName", modName);
+        if (openPage)
+            DelayCallForUI(OpenPage, pageDelay);
         else
         {
             if (fix)
@@ -336,24 +306,47 @@ namespace MCMManager
         FixKeyRepeat();
         modRetries = 0;
         pageRetries = 0;
+        pageName = currentInfo->pageName;
+        pageNameTranslated = currentInfo->pageNameTranslated;
+        pageDelay = currentInfo->pageDelay;
+        modName = currentInfo->modName;
+        modNameTranslated = currentInfo->modNameTranslated;
+        modDelay = currentInfo->modDelay;
+        openMod = currentInfo->openMod;
+        openPage = currentInfo->openPage;
         bool mcmOpen = IsMCMOpen();
-        bool theModOpen = IsModAlreadyOpen();
+        std::pair<bool, std::string> retM = IsModAlreadyOpen();
+        bool theModOpen = retM.first;
+        std::string openedModName = retM.second;
+        // bool theModOpen = IsModAlreadyOpen();
         bool aModOpen = IsAnyModOpen();
-        bool pageOpen = IsPageAlreadyOpen();
+        std::pair<bool, std::string> retP = IsPageAlreadyOpen();
+        bool pageOpen = retP.first;
+        std::string openedPageName = retP.second;
+        // bool pageOpen = IsPageAlreadyOpen();
         bool aPageOpen = IsAnyPageOpen();
         bool unlock = true;
         /*logger::trace("MCM is Open:      {}"sv, mcmOpen);
-        logger::trace("The Mod is open:  {},    to be open:    {}"sv, theModOpen, currentInfo.openMod);
+        logger::trace("The Mod is open:  {},    to be open:    {}"sv, theModOpen, openMod);
         logger::trace("A Mod is open:    {}"sv, aModOpen);
-        logger::trace("The Page is open: {},    to be open:    {}"sv, pageOpen, currentInfo.openPage);
+        logger::trace("The Page is open: {},    to be open:    {}"sv, pageOpen, openPage);
         logger::trace("A Page is open:   {}"sv, aPageOpen);*/
+        if (mcmOpen && currentInfo->returnToClosed && (currentInfo->lastPageNameTr != openedPageName || currentInfo->lastModNameTr != openedModName))
+        {
+            currentInfo->lastModNameTr = openedModName;
+            currentInfo->lastPageNameTr = openedPageName;
+            currentInfo->lastPageDelay = pageDelay;
+            currentInfo->lastModDelay = modDelay;
+            currentInfo->hasOpened = true;
+        }
         if (mcmOpen && Settings::CanAlsoCloseMCM.GetValue() &&
-            ((theModOpen && currentInfo.openMod && pageOpen && currentInfo.openPage) ||
-             (theModOpen && currentInfo.openMod && !aPageOpen && !currentInfo.openPage) ||
-             (theModOpen && !currentInfo.openMod) ||
-             (!aModOpen && !currentInfo.openMod)))
+            ((theModOpen && openMod && pageOpen && openPage) ||
+             (theModOpen && openMod && !aPageOpen && !openPage) ||
+             (theModOpen && !openMod) ||
+             (!aModOpen && !openMod) || currentInfo->hasOpened))
         {
             logger::debug("Mod/Page already open, closing"sv);
+            escTabClose = false;
             auto uiMessageQueue = RE::UIMessageQueue::GetSingleton();
             uiMessageQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
             if (Settings::ReturnToPreviousMenu.GetValue() && closedMenuName != "None")
@@ -362,6 +355,8 @@ namespace MCMManager
                 uiMessageQueue->AddMessage(closedMenuName, RE::UI_MESSAGE_TYPE::kShow, nullptr);
                 closedMenuName = "None";
             }
+            if (currentInfo->returnToClosed)
+                currentInfo->shouldReturn = true;
             lock = false;
             return;
         }
@@ -370,8 +365,19 @@ namespace MCMManager
         {
             logger::debug("MCM not open, opening"sv);
             view->Invoke("_root.QuestJournalFader.Menu_mc.ConfigPanelOpen", nullptr, nullptr, 0);
+            if (currentInfo->shouldReturn)
+            {
+                modName = currentInfo->lastModNameTr;
+                modNameTranslated = currentInfo->lastModNameTr;
+                modDelay = currentInfo->lastModDelay;
+                pageName = currentInfo->lastPageNameTr;
+                pageNameTranslated = currentInfo->lastPageNameTr;
+                pageDelay = currentInfo->lastPageDelay;
+                openMod = currentInfo->lastModNameTr != "None";
+                openPage = currentInfo->lastPageNameTr != "None";
+            }
         }
-
+        logger::debug("ModName: {}, PageName: {}, OpenMod: {}, OpenPage: {}"sv, modName, pageName, openMod, openPage);
         if (!theModOpen && aModOpen)
         {
             logger::debug("The mod is not open but a mod is open, reverting to main MCM"sv);
@@ -380,14 +386,14 @@ namespace MCMManager
             view->Invoke((modListPanel + "setState").c_str(), nullptr, arg, 1);
         }
 
-        if (!theModOpen && currentInfo.openMod)
+        if (!theModOpen && openMod)
         {
             logger::debug("The mod is not open..."sv);
-            DelayCallForUI(OpenMod, currentInfo.modDelay);
+            DelayCallForUI(OpenMod, currentInfo->modDelay);
             unlock = false;
         }
 
-        if (theModOpen && !pageOpen && currentInfo.openPage)
+        if (theModOpen && !pageOpen && openPage)
         {
             logger::debug("The mod is open but the page is not..."sv);
             DelayCallForUI(OpenPage, 0);
@@ -396,6 +402,7 @@ namespace MCMManager
 
         if (unlock)
             lock = false;
+        currentInfo->hasOpened = true;
     }
 
     void OpenJournal()
@@ -419,31 +426,31 @@ namespace MCMManager
         std::string_view menuName = "None";
 
         if (ui->IsMenuOpen(RE::InventoryMenu::MENU_NAME))
-            if (Settings::DisableInInventoryOverride.GetValue() || currentInfo.disableInInventory)
+            if (Settings::DisableInInventoryOverride.GetValue() || currentInfo->disableInInventory)
                 return;
             else
                 menuName = RE::InventoryMenu::MENU_NAME;
 
         if (ui->IsMenuOpen(RE::MapMenu::MENU_NAME))
-            if (Settings::DisableInMapOverride.GetValue() || currentInfo.disableInMap)
+            if (Settings::DisableInMapOverride.GetValue() || currentInfo->disableInMap)
                 return;
             else
                 menuName = RE::MapMenu::MENU_NAME;
 
         if (ui->IsMenuOpen(RE::DialogueMenu::MENU_NAME))
-            if (Settings::DisableInDialogueOverride.GetValue() || currentInfo.disableInDialogue)
+            if (Settings::DisableInDialogueOverride.GetValue() || currentInfo->disableInDialogue)
                 return;
             else
                 menuName = RE::DialogueMenu::MENU_NAME;
 
         if (ui->IsMenuOpen(RE::MagicMenu::MENU_NAME))
-            if (Settings::DisableInMagicOverride.GetValue() || currentInfo.disableInMagic)
+            if (Settings::DisableInMagicOverride.GetValue() || currentInfo->disableInMagic)
                 return;
             else
                 menuName = RE::MagicMenu::MENU_NAME;
 
         if (ui->IsMenuOpen(RE::FavoritesMenu::MENU_NAME))
-            if (Settings::DisableInFavoritesOverride.GetValue() || currentInfo.disableInFavorites)
+            if (Settings::DisableInFavoritesOverride.GetValue() || currentInfo->disableInFavorites)
                 return;
             else
                 menuName = RE::FavoritesMenu::MENU_NAME;

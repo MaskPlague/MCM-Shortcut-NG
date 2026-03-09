@@ -122,6 +122,9 @@ namespace Settings
             if (hotkeyConfig.contains("Page Open Delay"))
                 newInfo.pageDelay = hotkeyConfig["Page Open Delay"].get<int>();
 
+            if (hotkeyConfig.contains("Return To Closed"))
+                newInfo.returnToClosed = hotkeyConfig["Return To Closed"].get<bool>();
+
             if (newInfo.hotkey != 0)
                 shortcutInfos.push_back(newInfo);
         }
@@ -176,6 +179,7 @@ namespace Settings
             logger::info(">  Page:  Open: {},   Name: {},   Delay: {}", info.openPage, info.pageName, info.pageDelay);
             logger::info(">  Disabled:   Inv: {},    Dia: {},    Mag: {},    Map: {}",
                          info.disableInInventory, info.disableInDialogue, info.disableInMagic, info.disableInMap);
+            logger::info(">  Return To Closed: {}", info.returnToClosed);
             logger::info("> -- --  -  -- --  -  -- --  -  -- --  -  -- --  -  -- --  -  -- --  -  -- -- <\n");
 
             if (!info.hotkey)

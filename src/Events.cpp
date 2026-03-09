@@ -122,7 +122,7 @@ namespace Events
                 }
                 logger::debug("-           -           -           -           -           -           -           -"sv);
                 logger::trace("Shortcut hit"sv);
-                MCMManager::currentInfo = shortcut;
+                MCMManager::currentInfo = &shortcut;
                 MCMManager::CloseOpenMenus();
             }
             shortcut.shortcutHit = false;
@@ -274,32 +274,53 @@ namespace Events
         logger::trace("=========================================");
     }
 
+    void ResetLastItemData()
+    {
+        for (Settings::shortcutInfo &shortcut : Settings::shortcutInfos)
+        {
+            shortcut.hasOpened = false;
+            shortcut.shouldReturn = false;
+            shortcut.lastModNameTr = "None";
+            shortcut.lastPageNameTr = "None";
+        }
+    }
+
     RE::BSEventNotifyControl UIEvent::ProcessEvent(
         const RE::MenuOpenCloseEvent *a_event,
         RE::BSTEventSource<RE::MenuOpenCloseEvent> *)
     {
-        if (!a_event || !a_event->opening)
+        if (!a_event)
         {
             return RE::BSEventNotifyControl::kContinue;
         }
-        RE::UI_MENU_FLAGS::kUsesMovementToDirection;
-        auto ui = RE::UI::GetSingleton();
-        if (ui)
+        if (a_event->opening)
         {
-            auto menu = ui->GetMenu(a_event->menuName);
-            if (Settings::log_level.GetValue() == 4)
-                PrintMenuFlags(menu.get(), a_event->menuName.c_str());
-            if (menu && menu->menuFlags.any(RE::UI_MENU_FLAGS::kUpdateUsesCursor, RE::UI_MENU_FLAGS::kUsesCursor))
+            RE::UI_MENU_FLAGS::kUsesMovementToDirection;
+            auto ui = RE::UI::GetSingleton();
+            if (ui)
             {
-                logger::trace("Calling FixKeyRepeat()");
-                MCMManager::FixKeyRepeat();
+                auto menu = ui->GetMenu(a_event->menuName);
+                if (Settings::log_level.GetValue() == 4)
+                    PrintMenuFlags(menu.get(), a_event->menuName.c_str());
+                if (menu && menu->menuFlags.any(RE::UI_MENU_FLAGS::kUpdateUsesCursor, RE::UI_MENU_FLAGS::kUsesCursor))
+                {
+                    logger::trace("Calling FixKeyRepeat()");
+                    MCMManager::FixKeyRepeat();
+                }
+            }
+            if (MCMManager::awaitJournalMenu && a_event->menuName == RE::JournalMenu::MENU_NAME)
+            {
+                MCMManager::awaitJournalMenu = false;
+                MCMManager::AddUiTask(MCMManager::OpenFromJournal);
             }
         }
-
-        if (MCMManager::awaitJournalMenu && a_event->menuName == RE::JournalMenu::MENU_NAME)
+        else if (!a_event->opening && a_event->menuName == RE::JournalMenu::MENU_NAME)
         {
-            MCMManager::awaitJournalMenu = false;
-            MCMManager::AddUiTask(MCMManager::OpenFromJournal);
+            // If user has not manually closed the journal (this mod did) then reset the bool else, they did and we reset the has opened states.
+            if (!MCMManager::escTabClose)
+                MCMManager::escTabClose = true;
+            else
+                ResetLastItemData();
         }
         return RE::BSEventNotifyControl::kContinue;
     }
