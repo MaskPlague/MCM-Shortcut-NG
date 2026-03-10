@@ -9,20 +9,20 @@ namespace Papyrus
         }
         logger::debug("Opening an MCM from papyrus call, Mod: {}, Mod Delay: {}, Page: {}, Page Delay: {}"sv,
                       modName.c_str(), modDelay, pageName.c_str(), pageDelay);
-        MCMManager::currentInfo = {};
-        MCMManager::currentInfo->modName = modName;
-        MCMManager::currentInfo->openMod = std::strcmp(MCMManager::currentInfo->modName.c_str(), "None") != 0;
-        if (MCMManager::currentInfo->openMod)
+        papyrusInfo->modName = modName;
+        papyrusInfo->openMod = std::strcmp(papyrusInfo->modName.c_str(), "None") != 0;
+        if (papyrusInfo->openMod)
         {
-            if (MCMManager::currentInfo->modName.starts_with("$"))
-                SKSE::Translation::Translate(modName, MCMManager::currentInfo->modNameTranslated);
+            if (papyrusInfo->modName.starts_with("$"))
+                SKSE::Translation::Translate(modName, papyrusInfo->modNameTranslated);
             else
-                MCMManager::currentInfo->modNameTranslated = MCMManager::currentInfo->modName;
+                papyrusInfo->modNameTranslated = papyrusInfo->modName;
         }
-        MCMManager::currentInfo->modDelay = modDelay;
-        MCMManager::currentInfo->pageName = pageName;
-        MCMManager::currentInfo->openPage = std::strcmp(MCMManager::currentInfo->pageName.c_str(), "None") != 0;
-        MCMManager::currentInfo->pageDelay = pageDelay;
+        papyrusInfo->modDelay = modDelay;
+        papyrusInfo->pageName = pageName;
+        papyrusInfo->openPage = std::strcmp(papyrusInfo->pageName.c_str(), "None") != 0;
+        papyrusInfo->pageDelay = pageDelay;
+        MCMManager::currentInfo = papyrusInfo;
         MCMManager::CloseOpenMenus();
         return true;
     }
